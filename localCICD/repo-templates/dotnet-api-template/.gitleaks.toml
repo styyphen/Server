@@ -1,0 +1,7 @@
+title = "__PROJECT_NAME__ gitleaks config"
+
+[allowlist]
+description = "Allow local emulator defaults only."
+regexes = [
+  '''UseDevelopmentStorage=true'''
+]

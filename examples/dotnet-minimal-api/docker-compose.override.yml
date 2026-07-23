@@ -1,0 +1,4 @@
+services:
+  dotnet-minimal-api:
+    environment:
+      Observability__OtlpEndpoint: http://host.docker.internal:4317

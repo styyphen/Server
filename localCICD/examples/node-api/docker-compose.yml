@@ -1,0 +1,18 @@
+services:
+  app:
+    build: .
+    image: localhost:5000/node-api:local
+    environment:
+      PORT: "8080"
+      AWS_ENDPOINT_URL: http://localstack:4566
+      AZURE_STORAGE_CONNECTION_STRING: UseDevelopmentStorage=true
+      GCS_EMULATOR_HOST: http://fake-gcs-server:4443
+    ports:
+      - "8080:8080"
+    networks:
+      - local-platform-network
+
+networks:
+  local-platform-network:
+    external: true
+

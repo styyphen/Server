@@ -1,0 +1,29 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-test-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: ./scripts/restore.ps1
+        shell: pwsh
+      - run: ./scripts/lint.ps1
+        shell: pwsh
+      - run: ./scripts/build.ps1
+        shell: pwsh
+      - run: ./scripts/test.ps1
+        shell: pwsh
+      - run: ./scripts/security-scan.ps1
+        shell: pwsh
+      - run: ./scripts/package.ps1 -SkipPush
+        shell: pwsh
+

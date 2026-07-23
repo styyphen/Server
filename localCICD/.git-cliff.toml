@@ -1,0 +1,41 @@
+[changelog]
+header = "# Changelog\n\n"
+body = """
+{% if version %}\
+## {{ version }} - {{ timestamp | date(format="%Y-%m-%d") }}
+{% else %}\
+## Unreleased
+{% endif %}\
+{% for group, commits in commits | group_by(attribute="group") %}
+
+### {{ group | upper_first }}
+{% for commit in commits %}
+- {{ commit.message | upper_first }}\
+{% if commit.remote.pr_number %} (#{{ commit.remote.pr_number }}){% endif %}
+{% endfor %}
+{% endfor %}\n
+"""
+footer = ""
+trim = true
+
+[git]
+conventional_commits = true
+filter_unconventional = true
+split_commits = false
+protect_breaking_commits = true
+filter_commits = false
+topo_order = false
+sort_commits = "oldest"
+
+[git.commit_parsers]
+"^feat" = { group = "features" }
+"^fix" = { group = "fixes" }
+"^perf" = { group = "performance" }
+"^docs" = { group = "documentation" }
+"^refactor" = { group = "refactoring" }
+"^test" = { group = "testing" }
+"^build" = { group = "build" }
+"^ci" = { group = "ci" }
+"^security" = { group = "security" }
+"^chore\\(release\\)" = { skip = true }
+"^chore" = { group = "maintenance" }

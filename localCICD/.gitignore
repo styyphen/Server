@@ -1,0 +1,36 @@
+# Local environment
+.env
+.env.local
+
+# Tool output
+.act/
+.dagger/
+coverage/
+test-results/
+reports/
+dist/
+build/
+artifacts/
+sbom/
+
+# Dependency folders
+node_modules/
+packages/
+
+# Terraform/OpenTofu
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+
+# IDE/editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+.DS_Store

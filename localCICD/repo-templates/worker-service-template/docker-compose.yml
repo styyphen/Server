@@ -1,0 +1,15 @@
+services:
+  worker:
+    build: .
+    image: localhost:5000/__PROJECT_SLUG__:local
+    environment:
+      WORKER_INTERVAL_MS: "5000"
+      AWS_ENDPOINT_URL: http://localstack:4566
+      AZURE_STORAGE_CONNECTION_STRING: UseDevelopmentStorage=true
+      GCS_EMULATOR_HOST: http://fake-gcs-server:4443
+    networks:
+      - local-platform-network
+
+networks:
+  local-platform-network:
+    external: true

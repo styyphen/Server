@@ -1,0 +1,215 @@
+name: ${COMPOSE_PROJECT_NAME:-local-cloud-dev-platform}
+
+services:
+  gitea:
+    image: ${GITEA_IMAGE:-gitea/gitea:latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-local-cloud-dev-platform}-gitea
+    restart: unless-stopped
+    environment:
+      USER_UID: ${GITEA_USER_UID:-1000}
+      USER_GID: ${GITEA_USER_GID:-1000}
+      GITEA__server__DOMAIN: ${PLATFORM_HOSTNAME:-localhost}
+      GITEA__server__ROOT_URL: http://${PLATFORM_HOSTNAME:-localhost}:${GITEA_HTTP_PORT:-3000}/
+      GITEA__server__HTTP_PORT: 3000
+      GITEA__server__SSH_DOMAIN: ${PLATFORM_HOSTNAME:-localhost}
+      GITEA__server__SSH_PORT: ${GITEA_SSH_PORT:-2222}
+      GITEA__server__START_SSH_SERVER: "false"
+      GITEA__actions__ENABLED: "true"
+      GITEA__packages__ENABLED: "true"
+    ports:
+      - "${GITEA_HTTP_PORT:-3000}:3000"
+      - "${GITEA_SSH_PORT:-2222}:22"
+    volumes:
+      - gitea-data:/data
+      - ./gitea/app.ini:/data/gitea/conf/app.ini
+    networks:
+      - local-platform
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:3000/api/healthz || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 45s
+
+  gitea-runner:
+    image: ${GITEA_RUNNER_IMAGE:-gitea/act_runner:latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-local-cloud-dev-platform}-gitea-runner
+    restart: unless-stopped
+    depends_on:
+      gitea:
+        condition: service_started
+    environment:
+      GITEA_INSTANCE_URL: ${GITEA_INSTANCE_URL:-http://gitea:3000}
+      GITEA_RUNNER_REGISTRATION_TOKEN: ${GITEA_RUNNER_REGISTRATION_TOKEN:-}
+      GITEA_RUNNER_NAME: ${GITEA_RUNNER_NAME:-local-runner}
+      GITEA_RUNNER_LABELS: ${GITEA_RUNNER_LABELS:-ubuntu-latest:docker://node:20-bookworm,ubuntu-22.04:docker://node:20-bookworm}
+      DOCKER_HOST: unix:///var/run/docker.sock
+    working_dir: /data
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        if [ -z "$${GITEA_RUNNER_REGISTRATION_TOKEN}" ]; then
+          echo "Set GITEA_RUNNER_REGISTRATION_TOKEN in .env to register the local Gitea Actions runner."
+          sleep infinity
+        fi
+        if [ ! -f .runner ]; then
+          act_runner register --no-interactive --instance "$${GITEA_INSTANCE_URL}" --token "$${GITEA_RUNNER_REGISTRATION_TOKEN}" --name "$${GITEA_RUNNER_NAME}" --labels "$${GITEA_RUNNER_LABELS}"
+        fi
+        exec act_runner daemon --config /config.yaml
+    volumes:
+      - gitea-runner-data:/data
+      - ./gitea/actions-runner/config.yaml:/config.yaml:ro
+      - ${DOCKER_SOCKET_PATH:-/var/run/docker.sock}:/var/run/docker.sock
+    networks:
+      - local-platform
+
+  registry:
+    image: ${REGISTRY_IMAGE:-registry:2}
+    container_name: ${COMPOSE_PROJECT_NAME:-local-cloud-dev-platform}-registry
+    restart: unless-stopped
+    ports:
+      - "${REGISTRY_PORT:-5000}:5000"
+    volumes:
+      - registry-data:/var/lib/registry
+      - ./registry/config.yml:/etc/docker/registry/config.yml:ro
+    networks:
+      - local-platform
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:5000/v2/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  localstack:
+    image: ${LOCALSTACK_IMAGE:-localstack/localstack:latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-local-cloud-dev-platform}-localstack
+    restart: unless-stopped
+    environment:
+      SERVICES: ${LOCALSTACK_SERVICES:-s3,sqs,sns,dynamodb,iam,sts}
+      DEBUG: ${LOCALSTACK_DEBUG:-0}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-us-east-1}
+      DOCKER_HOST: unix:///var/run/docker.sock
+      PERSISTENCE: ${LOCALSTACK_PERSISTENCE:-1}
+    ports:
+      - "${LOCALSTACK_PORT:-4566}:4566"
+    volumes:
+      - localstack-data:/var/lib/localstack
+      - ${DOCKER_SOCKET_PATH:-/var/run/docker.sock}:/var/run/docker.sock
+    networks:
+      - local-platform
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:4566/_localstack/health >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  azurite:
+    image: ${AZURITE_IMAGE:-mcr.microsoft.com/azure-storage/azurite:latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-local-cloud-dev-platform}-azurite
+    restart: unless-stopped
+    command: >
+      azurite
+      --blobHost 0.0.0.0
+      --queueHost 0.0.0.0
+      --tableHost 0.0.0.0
+      --location /data
+      --debug /data/debug.log
+    ports:
+      - "${AZURITE_BLOB_PORT:-10000}:10000"
+      - "${AZURITE_QUEUE_PORT:-10001}:10001"
+      - "${AZURITE_TABLE_PORT:-10002}:10002"
+    volumes:
+      - azurite-data:/data
+    networks:
+      - local-platform
+
+  fake-gcs-server:
+    image: ${FAKE_GCS_IMAGE:-fsouza/fake-gcs-server:latest}
+    container_name: ${COMPOSE_PROJECT_NAME:-local-cloud-dev-platform}-fake-gcs-server
+    restart: unless-stopped
+    command:
+      - -scheme
+      - http
+      - -host
+      - 0.0.0.0
+      - -port
+      - "4443"
+      - -public-host
+      - ${PLATFORM_HOSTNAME:-localhost}:${FAKE_GCS_PORT:-4443}
+      - -data
+      - /data
+    ports:
+      - "${FAKE_GCS_PORT:-4443}:4443"
+    volumes:
+      - fake-gcs-data:/data
+    networks:
+      - local-platform
+
+  sonarqube-db:
+    image: ${SONAR_POSTGRES_IMAGE:-postgres:16-alpine}
+    container_name: ${COMPOSE_PROJECT_NAME:-local-cloud-dev-platform}-sonarqube-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${SONAR_POSTGRES_DB:-sonarqube}
+      POSTGRES_USER: ${SONAR_POSTGRES_USER:-sonarqube}
+      POSTGRES_PASSWORD: ${SONAR_POSTGRES_PASSWORD:-sonarqube}
+    volumes:
+      - sonarqube-db-data:/var/lib/postgresql/data
+    networks:
+      - local-platform
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  sonarqube:
+    image: ${SONARQUBE_IMAGE:-sonarqube:community}
+    container_name: ${COMPOSE_PROJECT_NAME:-local-cloud-dev-platform}-sonarqube
+    restart: unless-stopped
+    depends_on:
+      sonarqube-db:
+        condition: service_healthy
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://sonarqube-db:5432/${SONAR_POSTGRES_DB:-sonarqube}
+      SONAR_JDBC_USERNAME: ${SONAR_POSTGRES_USER:-sonarqube}
+      SONAR_JDBC_PASSWORD: ${SONAR_POSTGRES_PASSWORD:-sonarqube}
+    ports:
+      - "${SONARQUBE_PORT:-9000}:9000"
+    volumes:
+      - sonarqube-data:/opt/sonarqube/data
+      - sonarqube-extensions:/opt/sonarqube/extensions
+      - sonarqube-logs:/opt/sonarqube/logs
+    networks:
+      - local-platform
+    ulimits:
+      nofile:
+        soft: 131072
+        hard: 131072
+      nproc: 8192
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9000/api/system/status >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 20
+      start_period: 90s
+
+networks:
+  local-platform:
+    name: ${LOCAL_PLATFORM_NETWORK:-local-platform-network}
+    driver: bridge
+
+volumes:
+  gitea-data:
+  gitea-runner-data:
+  registry-data:
+  localstack-data:
+  azurite-data:
+  fake-gcs-data:
+  sonarqube-db-data:
+  sonarqube-data:
+  sonarqube-extensions:
+  sonarqube-logs:

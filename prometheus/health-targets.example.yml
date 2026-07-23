@@ -1,0 +1,5 @@
+- targets:
+    - http://host.docker.internal:5000/health
+  labels:
+    service_name: dotnet-minimal-api
+    deployment_environment: Local

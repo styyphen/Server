@@ -1,0 +1,17 @@
+services:
+  api:
+    build: .
+    image: localhost:5000/__PROJECT_SLUG__:local
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      AWS_ENDPOINT_URL: http://localstack:4566
+      Azure__StorageConnectionString: UseDevelopmentStorage=true
+      Gcp__StorageEndpoint: http://fake-gcs-server:4443
+    ports:
+      - "8080:8080"
+    networks:
+      - local-platform-network
+
+networks:
+  local-platform-network:
+    external: true

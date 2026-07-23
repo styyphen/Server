@@ -1,0 +1,103 @@
+name: node-ci
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_call:
+    inputs:
+      node-version:
+        description: Node.js version to install.
+        required: false
+        type: string
+        default: "22"
+      package-manager:
+        description: npm, pnpm, or yarn.
+        required: false
+        type: string
+        default: npm
+      working-directory:
+        description: Directory containing package.json.
+        required: false
+        type: string
+        default: .
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  quality:
+    name: install-lint-test-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory || '.' }}
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version || '22' }}
+          cache: ${{ inputs.package-manager || 'npm' }}
+          cache-dependency-path: |
+            ${{ inputs.working-directory || '.' }}/package-lock.json
+            ${{ inputs.working-directory || '.' }}/pnpm-lock.yaml
+            ${{ inputs.working-directory || '.' }}/yarn.lock
+
+      - name: Enable Corepack
+        if: ${{ (inputs.package-manager || 'npm') != 'npm' }}
+        run: corepack enable
+
+      - name: Install dependencies
+        run: |
+          if ("${{ inputs.package-manager || 'npm' }}" -eq "pnpm") {
+            pnpm install --frozen-lockfile
+          } elseif ("${{ inputs.package-manager || 'npm' }}" -eq "yarn") {
+            yarn install --immutable
+          } else {
+            npm ci
+          }
+        shell: pwsh
+
+      - name: Lint
+        run: |
+          if (Test-Path package.json) {
+            npm run lint --if-present
+            npm run format:check --if-present
+          }
+        shell: pwsh
+
+      - name: Test
+        run: npm test --if-present -- --ci --coverage
+        shell: pwsh
+
+      - name: Build
+        run: npm run build --if-present
+        shell: pwsh
+
+      - name: Dependency vulnerability audit
+        run: npm audit --audit-level=high
+        shell: pwsh
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: node-coverage
+          path: ${{ inputs.working-directory || '.' }}/coverage
+          if-no-files-found: ignore
+
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

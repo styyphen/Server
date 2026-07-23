@@ -1,0 +1,13 @@
+title = "local cloud dev platform gitleaks config"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Allow documented local-only development endpoints and placeholder values."
+regexes = [
+  '''localhost:[0-9]+''',
+  '''127\.0\.0\.1:[0-9]+''',
+  '''example(_|-)?(secret|token|password|key)''',
+  '''changeme''',
+]

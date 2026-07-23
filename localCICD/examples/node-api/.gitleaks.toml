@@ -1,0 +1,8 @@
+title = "node-api gitleaks config"
+
+[allowlist]
+description = "Allow local emulator defaults only."
+regexes = [
+  '''UseDevelopmentStorage=true'''
+]
+

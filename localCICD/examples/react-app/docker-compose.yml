@@ -1,0 +1,13 @@
+services:
+  app:
+    build: .
+    image: localhost:5000/react-app:local
+    ports:
+      - "5173:80"
+    networks:
+      - local-platform-network
+
+networks:
+  local-platform-network:
+    external: true
+

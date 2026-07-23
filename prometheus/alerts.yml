@@ -1,0 +1,149 @@
+groups:
+  - name: local-observability-platform
+    rules:
+      - alert: ObservabilityTargetDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          alert_category: platform
+          failure_cause: scrape_target_down
+        annotations:
+          summary: "{{ $labels.job }} target is down"
+          description: "Prometheus cannot scrape {{ $labels.instance }} for job {{ $labels.job }}."
+          remediation: "Run scripts/health-check.ps1, then restart the stack with scripts/restart.ps1 if needed."
+
+      - alert: HighContainerMemoryUsage
+        expr: |
+          (container_memory_working_set_bytes{name!=""} / container_spec_memory_limit_bytes{name!=""}) * 100 > 85
+          and container_spec_memory_limit_bytes{name!=""} > 0
+        for: 5m
+        labels:
+          severity: warning
+          alert_category: infrastructure
+          failure_cause: resource_pressure
+        annotations:
+          summary: "Container memory usage is high"
+          description: "{{ $labels.name }} is using more than 85% of its configured memory limit."
+          remediation: "Inspect the container workload and consider restarting the affected local service."
+
+      - alert: HighContainerCpuUsage
+        expr: |
+          rate(container_cpu_usage_seconds_total{name!=""}[5m]) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          alert_category: infrastructure
+          failure_cause: resource_pressure
+        annotations:
+          summary: "Container CPU usage is high"
+          description: "{{ $labels.name }} CPU usage has been above 80% for 5 minutes."
+          remediation: "Inspect active requests or background work in the affected service."
+
+      - alert: LowDiskSpace
+        expr: |
+          (1 - (node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"})) * 100 > 85
+        for: 5m
+        labels:
+          severity: critical
+          alert_category: infrastructure
+          failure_cause: resource_pressure
+        annotations:
+          summary: "Host disk usage is high"
+          description: "{{ $labels.mountpoint }} is above 85% usage."
+          remediation: "Free local disk space. Do not delete observability volumes unless you no longer need stored data."
+
+      - alert: HighHttpErrorRate
+        expr: |
+          (
+            sum by (service_name) (rate(http_server_request_duration_seconds_count{http_response_status_code=~"5.."}[5m]))
+            /
+            sum by (service_name) (rate(http_server_request_duration_seconds_count[5m]))
+          ) * 100 > 5
+        for: 5m
+        labels:
+          severity: error
+          alert_category: application
+          failure_cause: http_5xx
+        annotations:
+          summary: "HTTP 5xx error rate is high"
+          description: "{{ $labels.service_name }} has a 5xx error rate above 5% for 5 minutes."
+          remediation: "Check the service logs dashboard and inspect recent traces for failed requests."
+
+      - alert: ApplicationExceptions
+        expr: |
+          sum by (service_name) (rate(process_runtime_dotnet_exceptions_count_total[5m])) > 0
+        for: 2m
+        labels:
+          severity: error
+          alert_category: application
+          failure_cause: exception_rate
+        annotations:
+          summary: "Application exceptions detected"
+          description: "{{ $labels.service_name }} is throwing exceptions."
+          remediation: "Open the logs dashboard, filter by level ERROR, then inspect correlated traces."
+
+      - alert: SlowApiRequests
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le, service_name) (rate(http_server_request_duration_seconds_bucket[5m]))
+          ) > 1
+        for: 5m
+        labels:
+          severity: warning
+          alert_category: application
+          failure_cause: latency
+        annotations:
+          summary: "API p95 latency is high"
+          description: "{{ $labels.service_name }} p95 request latency is above 1 second for 5 minutes."
+          remediation: "Open the service dashboard and inspect slow traces in Tempo."
+
+      - alert: ApplicationTelemetryMissing
+        expr: |
+          (
+            sum by (service_name) (count_over_time(http_server_request_duration_seconds_count{http_route="/health"}[15m])) > 0
+          )
+          unless
+          (
+            sum by (service_name) (count_over_time(http_server_request_duration_seconds_count{http_route="/health"}[1m])) > 0
+          )
+        for: 1m
+        labels:
+          severity: critical
+          alert_category: application
+          failure_cause: telemetry_missing
+        annotations:
+          summary: "Application telemetry stopped reporting health traffic"
+          description: "No /health request metrics have been observed for {{ $labels.service_name }} in the last minute, but this only proves telemetry is missing."
+          remediation: "Check application-health-probes alerts to distinguish network unreachable from service unavailable. Confirm the application and OpenTelemetry exporter are running."
+
+      - alert: ApplicationNetworkUnreachable
+        expr: |
+          probe_success{job="application-health-probes"} == 0
+          and on (instance)
+          probe_http_status_code{job="application-health-probes"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          alert_category: application
+          failure_cause: network_unreachable
+        annotations:
+          summary: "Application health endpoint is unreachable"
+          description: "Blackbox probing could not get an HTTP response from {{ $labels.instance }}. This points to network, DNS, port, firewall, or process-not-listening failure."
+          remediation: "Verify the URL in prometheus/health-targets.yml, confirm the app is listening, and test the endpoint from the Docker host."
+
+      - alert: ApplicationServiceUnavailable
+        expr: |
+          probe_http_status_code{job="application-health-probes"} > 0
+          and on (instance)
+          probe_success{job="application-health-probes"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          alert_category: application
+          failure_cause: service_unavailable
+        annotations:
+          summary: "Application health endpoint returned a non-healthy HTTP response"
+          description: "{{ $labels.instance }} responded with HTTP {{ $value }} but did not pass the health probe."
+          remediation: "Open the application logs and inspect the health endpoint implementation or dependencies."

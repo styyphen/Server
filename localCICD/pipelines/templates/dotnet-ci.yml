@@ -1,0 +1,105 @@
+name: dotnet-ci
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_call:
+    inputs:
+      dotnet-version:
+        description: .NET SDK version to install.
+        required: false
+        type: string
+        default: 10.0.x
+      solution:
+        description: Solution, project, or repository path to build.
+        required: false
+        type: string
+        default: .
+      configuration:
+        description: Build configuration.
+        required: false
+        type: string
+        default: Release
+      test-filter:
+        description: Optional dotnet test filter expression.
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+  security-events: write
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  BUILD_CONFIGURATION: ${{ inputs.configuration || 'Release' }}
+  DOTNET_SOLUTION: ${{ inputs.solution || '.' }}
+
+jobs:
+  quality:
+    name: restore-build-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ inputs.dotnet-version || '10.0.x' }}
+
+      - name: Restore dependencies
+        run: dotnet restore "$env:DOTNET_SOLUTION"
+        shell: pwsh
+
+      - name: Check formatting
+        run: dotnet format "$env:DOTNET_SOLUTION" --verify-no-changes --verbosity minimal
+        shell: pwsh
+
+      - name: Build
+        run: dotnet build "$env:DOTNET_SOLUTION" --configuration "$env:BUILD_CONFIGURATION" --no-restore
+        shell: pwsh
+
+      - name: Test with coverage
+        run: |
+          $filter = "${{ inputs.test-filter }}"
+          $args = @(
+            "test", $env:DOTNET_SOLUTION,
+            "--configuration", $env:BUILD_CONFIGURATION,
+            "--no-build",
+            "--logger", "trx",
+            "--results-directory", "artifacts/test-results",
+            "--collect", "XPlat Code Coverage"
+          )
+          if ($filter) {
+            $args += @("--filter", $filter)
+          }
+          dotnet @args
+        shell: pwsh
+
+      - name: Publish test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dotnet-test-results
+          path: artifacts/test-results
+          if-no-files-found: ignore
+
+      - name: Dependency vulnerability audit
+        run: dotnet list "$env:DOTNET_SOLUTION" package --vulnerable --include-transitive
+        shell: pwsh
+
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

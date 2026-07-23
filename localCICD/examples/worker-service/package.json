@@ -1,0 +1,12 @@
+{
+  "name": "worker-service",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node src/worker.js",
+    "test": "node --test tests/*.test.js",
+    "lint": "node --check src/worker.js && node --check tests/worker.test.js"
+  }
+}
+

@@ -1,0 +1,12 @@
+services:
+  app:
+    build: .
+    image: localhost:5000/__PROJECT_SLUG__:local
+    ports:
+      - "5173:80"
+    networks:
+      - local-platform-network
+
+networks:
+  local-platform-network:
+    external: true

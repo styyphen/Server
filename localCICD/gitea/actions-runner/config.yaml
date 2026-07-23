@@ -1,0 +1,32 @@
+log:
+  level: info
+
+runner:
+  file: .runner
+  capacity: 2
+  envs:
+    DOCKER_HOST: unix:///var/run/docker.sock
+  timeout: 3h
+  insecure: false
+  fetch_timeout: 5s
+  fetch_interval: 2s
+  labels:
+    - ubuntu-latest:docker://node:20-bookworm
+    - ubuntu-22.04:docker://node:20-bookworm
+
+cache:
+  enabled: true
+  dir: /data/cache
+  host: ""
+  port: 0
+  external_server: ""
+
+container:
+  network: local-platform-network
+  privileged: false
+  options: ""
+  valid_volumes:
+    - /var/run/docker.sock
+  docker_host: unix:///var/run/docker.sock
+  force_pull: false
+  force_rebuild: false
