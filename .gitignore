@@ -6,3 +6,13 @@
 k8s/reports/
 k8s/backups/
 k8s/kubeconfig*
+.validation/
+
+# Runtime credentials and locally generated trust material must remain outside Git.
+*.key
+*.crt
+*credentials*.env
+gitea-admin.env
+gitea-secrets.env
+htpasswd
+k3s-admin.yaml

@@ -21,15 +21,28 @@ $dockerAvailable = $false
 $dockerInfo = $null
 $containerSamples = @()
 try {
-    $dockerInfo = docker info --format '{{json .}}' | ConvertFrom-Json
+    $dockerInfoJson = docker info --format '{{json .}}' 2>$null
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($dockerInfoJson)) {
+        throw "docker info failed with exit code $LASTEXITCODE."
+    }
+    $dockerInfo = $dockerInfoJson | ConvertFrom-Json
     $dockerAvailable = $true
     $first = docker stats --no-stream --format '{{json .}}'
+    if ($LASTEXITCODE -ne 0) {
+        throw "First docker stats sample failed with exit code $LASTEXITCODE."
+    }
     if ($SampleSeconds -gt 0) {
         Start-Sleep -Seconds $SampleSeconds
     }
     $second = docker stats --no-stream --format '{{json .}}'
+    if ($LASTEXITCODE -ne 0) {
+        throw "Second docker stats sample failed with exit code $LASTEXITCODE."
+    }
     $containerSamples = @($first + $second) | Where-Object { $_ } | ForEach-Object { $_ | ConvertFrom-Json }
 } catch {
+    $dockerAvailable = $false
+    $dockerInfo = $null
+    $containerSamples = @()
     Write-Warning "Docker metrics were unavailable: $($_.Exception.Message)"
 }
 
@@ -53,7 +66,7 @@ $report = [ordered]@{
 $report | ConvertTo-Json -Depth 8 | Set-Content -Path $output -Encoding UTF8
 Write-Host "Capacity report written to $output"
 Write-Host "Review it before selecting the 8, 16, or 24 GiB deployment tier."
-if ($dockerAvailable -and $containerSamples.Count -eq 0) {
+if ($dockerAvailable -and @($containerSamples).Count -eq 0) {
     Write-Warning 'Docker was available, but no running containers were sampled. Start each representative stack and measure again before migration.'
 }
 if (($disk | Measure-Object FreeGiB -Minimum).Minimum -lt 80) {

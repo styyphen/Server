@@ -1,7 +1,9 @@
 # Single-server Kubernetes platform
 
-This directory implements Phases 0 and 1 of the
-[single-server plan](../docs/local-kubernetes-single-server-plan.md).
+This directory implements the Hyper-V/K3s server described by the
+[single-server plan](../docs/local-kubernetes-single-server-plan.md). The exact
+deployed state is recorded in
+[current-server-state.md](../docs/current-server-state.md).
 
 ## Phase 0: measure and back up
 
@@ -38,7 +40,7 @@ installer over TLS. Do not pipe an unpinned release into the server.
 Copy `/etc/rancher/k3s/k3s.yaml` to the administration machine, change its server
 address from `127.0.0.1`, restrict its file permissions, and keep it outside Git.
 
-Render and validate without changing a cluster:
+Render and validate the baseline without changing a cluster:
 
 ```powershell
 ./k8s/scripts/validate.ps1
@@ -56,9 +58,25 @@ The baseline creates four namespaces with quotas, default resource limits, Pod
 Security labels, and default-deny networking. Workloads added in later phases must
 include explicit network policies; DNS is the only egress allowed initially.
 
+## Current deployed overlay
+
+`overlays/single-server` remains the safe K3s baseline. The running D: server
+also has the platform workloads represented by `overlays/current`:
+
+```powershell
+kubectl kustomize ./k8s/overlays/current
+kubectl apply --dry-run=server -k ./k8s/overlays/current
+kubectl apply -k ./k8s/overlays/current
+```
+
+The current overlay intentionally does not contain Secret values. Create
+`platform-tls`, `gitea-secrets`, and `registry-auth` in `platform-system`
+before applying it to a new cluster. Runtime credentials remain under
+`D:\HyperV\credentials`, outside Git.
+
 ## Important limitations
 
 - This is not high availability.
 - The default-deny policies assume the K3s network plugin enforces NetworkPolicy.
-- Secrets and application workloads are deliberately not included in Phase 1.
+- Secrets are deliberately excluded from every overlay.
 - Do not remove existing Compose volumes after backup. They are the rollback source.

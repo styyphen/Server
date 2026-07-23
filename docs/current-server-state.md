@@ -1,0 +1,94 @@
+# Current D: Server State
+
+Verified 2026-07-23 against the running Hyper-V VM and Kubernetes API.
+
+## Source of truth
+
+- Repository and automation: `C:\Server`
+- Permanent server runtime: Hyper-V VM `local-k3s-server`
+- VM storage: `D:\HyperV\local-k3s-server`
+- Runtime credentials: `D:\HyperV\credentials`
+- Cold VM backup: `D:\server-backups\hyperv\baseline-20260723`
+- Platform logical backup: `D:\server-backups\platform\phase-d-20260723`
+
+Credentials, kubeconfigs, certificates, private keys, VHDX files, and backup
+archives are runtime state and must not be committed.
+
+## Hyper-V and Ubuntu
+
+| Setting | Current value |
+|---|---|
+| VM name | `local-k3s-server` |
+| Address | `192.168.50.10/24` |
+| Host/NAT gateway | `192.168.50.1` |
+| Hyper-V switch | `LocalServerNAT` |
+| CPUs | 6 |
+| Dynamic memory | 5–8 GiB; 5-GiB startup |
+| Guest OS | Ubuntu 24.04.4 LTS |
+| SSH account | `developer`, key-only |
+| Automatic actions | Start automatically; graceful guest shutdown |
+| Checkpoints | Disabled |
+
+The server uses the fixed hostnames `gitea.dev.home.arpa` and
+`registry.dev.home.arpa`. Windows trusts the private local CA stored outside
+Git. WSL and Docker Desktop are not part of the always-on runtime.
+
+## Kubernetes
+
+| Setting | Current value |
+|---|---|
+| Distribution | K3s `v1.36.1+k3s1` |
+| Node | `k3s-server`, Ready |
+| Runtime | containerd `2.2.3-k3s1` |
+| Pod CIDR | `10.42.0.0/16` |
+| Service CIDR | `10.43.0.0/16` |
+| Ingress | Traefik `3.6.13` |
+| Storage class | `local-path` |
+| Windows client | kubectl `v1.36.1` |
+
+The live K3s configuration matches
+`k8s/config/k3s-config.yaml`. Secrets encryption, system/kube reservations,
+eviction thresholds, namespace quotas, resource defaults, Pod Security labels,
+and default-deny network policies are active.
+
+## Deployed platform
+
+| Component | Version | Persistent storage | Endpoint |
+|---|---|---|---|
+| Gitea rootless | `1.26.2` | 10 GiB data + 1 GiB config | `https://gitea.dev.home.arpa` |
+| Distribution Registry | `3.1.1` | 20 GiB | `https://registry.dev.home.arpa` |
+
+Gitea SSH is exposed on node port `32222`. Registry access requires bcrypt
+authentication and TLS. K3s/containerd trusts the local CA and has registry
+authentication in root-owned `/etc/rancher/k3s/registries.yaml`.
+
+The live desired objects are rendered by `k8s/overlays/current`. Before applying
+that overlay to a new cluster, create these external Secrets in
+`platform-system`:
+
+- `platform-tls`
+- `gitea-secrets`
+- `registry-auth`
+
+Use `k8s/scripts/generate-platform-bootstrap.sh` to generate new material
+outside Git. Create the Gitea administrator after first startup with the Gitea
+CLI; its password is also stored outside Git.
+
+## Verified workflows
+
+- K3s node, DNS, local-path storage, Traefik ingress, and metrics survive reboot.
+- Gitea authenticated Git pushes, branches, and pull-request creation pass.
+- Registry rejects anonymous requests and accepts authenticated requests.
+- A pinned image was pushed, pulled through K3s, and resolved by immutable
+  digest.
+- Gitea repositories/database/configuration and Registry manifests/blobs were
+  backed up and restored into isolated validation directories.
+- The VM cold backup booted as an isolated restore.
+
+## Phase status
+
+- Phases A–D in `docs/hyperv-k3s-server-execution-plan.md` are complete.
+- Phase E is in progress but no observability workloads have been deployed to
+  K3s.
+- The Docker Compose observability files in the repository are legacy/local
+  development assets, not the active D: server runtime.
