@@ -3,3 +3,6 @@
 .env
 .vs/
 .idea/
+k8s/reports/
+k8s/backups/
+k8s/kubeconfig*
