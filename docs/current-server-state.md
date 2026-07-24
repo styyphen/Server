@@ -89,6 +89,6 @@ CLI; its password is also stored outside Git.
 
 - Phases A–D in `docs/hyperv-k3s-server-execution-plan.md` are complete.
 - Phase E is in progress but no observability workloads have been deployed to
-  K3s.
+  K3s. Resume from `docs/phase-e-continuation-plan.md`.
 - The Docker Compose observability files in the repository are legacy/local
   development assets, not the active D: server runtime.

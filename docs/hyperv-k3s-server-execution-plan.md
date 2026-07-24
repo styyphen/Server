@@ -124,7 +124,7 @@ development cycle.
 
 ## Execution status
 
-Updated 2026-07-23:
+Updated 2026-07-24:
 
 - Phase A passed: fixed Hyper-V networking, key-only SSH, firewall, controlled
   dynamic memory, three restart tests, and host/guest capacity gates.
@@ -138,4 +138,7 @@ Updated 2026-07-23:
   full-VM reboot persistence, and isolated logical backup/restore tests passed.
   The backup is at `D:\server-backups\platform\phase-d-20260723`.
 - Phase E is in progress. Observability components must fit the measured host
-  and guest resource reserve and will be introduced sequentially.
+  and guest resource reserve and will be introduced sequentially. Deployment is
+  paused at the preflight capacity gate because Windows measured 2.34 GiB
+  available, below the required 4 GiB. Resume with
+  `docs/phase-e-continuation-plan.md` after a controlled Windows restart.
