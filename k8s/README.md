@@ -134,6 +134,12 @@ kubectl -n ci-jobs exec deployment/gitea-runner -- `
   /opt/ci/run-representative-pipeline.sh
 ```
 
+## Phase H2 operations
+
+Daily health, logical backup, Registry maintenance, CI artifact retention, and
+monthly rehearsal procedures are documented in the
+[Phase H2 operations runbook](../docs/phase-h2-operations-runbook.md).
+
 ## Important limitations
 
 - This is not high availability.

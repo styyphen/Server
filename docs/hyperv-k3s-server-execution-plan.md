@@ -156,3 +156,8 @@ Updated 2026-07-25:
   and NetworkPolicies. Generated-repository contract validation covers every
   template. Only reversible H2 work may proceed until Phase G passes; cutover,
   soak acceptance, and rollback retirement remain deferred.
+- Phase H2 completed before Phase G. Daily health and logical backup tasks,
+  guarded weekly Registry garbage collection, and 14-day CI artifact retention
+  are installed. The first scheduled-identity health and backup runs passed;
+  backup hashes and isolated extraction passed; Registry returned Ready after
+  maintenance. H3 and H4 remain blocked until Phase G passes.

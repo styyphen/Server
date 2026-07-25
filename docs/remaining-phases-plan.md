@@ -48,13 +48,18 @@ Completed 2026-07-25. All four templates have a Kubernetes base and local
 overlay, retain Docker Compose workflows, and pass generated-repository
 contract validation.
 
-### H2: operational automation
+### H2: operational automation — complete
 
 - Add daily platform health checks.
 - Add scheduled logical backups and bounded cleanup.
 - Add registry and CI artifact retention enforcement.
 - Add monthly restore and upgrade rehearsal procedures.
 - Ensure every automation path has structured failure diagnostics.
+
+Completed 2026-07-25. Windows schedules now run daily health and logical
+backups plus guarded weekly Registry maintenance. Kubernetes enforces 14-day CI
+artifact retention. Backup hashes and isolated extraction passed, and the
+monthly restore/upgrade rehearsal procedure is documented.
 
 ### H3: resilience acceptance
 
@@ -85,6 +90,6 @@ backup/restore, sequential workload, and seven-day soak tests.
 
 ## Immediate execution order
 
-1. H2 read-only daily health automation.
-2. H2 backup and cleanup automation.
-3. Pause H final acceptance, complete Phase G, then resume H3 and H4.
+1. Pause H final acceptance and complete Phase G.
+2. Resume H3 resilience acceptance.
+3. Run H4 soak and cutover gates.

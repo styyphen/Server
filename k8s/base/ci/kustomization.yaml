@@ -6,3 +6,4 @@ resources:
   - job-execution.yaml
   - artifacts.yaml
   - network-policies.yaml
+  - retention.yaml

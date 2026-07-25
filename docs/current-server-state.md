@@ -125,5 +125,11 @@ CLI; its password is also stored outside Git.
   and generated-repository validation enforces their deployment contract.
   Reversible H2 automation may proceed; final H acceptance and cutover remain
   blocked on Phase G and the seven-day soak.
+- Phase H2 is complete. SYSTEM scheduled tasks run logical backups at 02:00,
+  health checks at 06:00, and guarded Registry maintenance Sundays at 04:00.
+  The `ci-artifact-retention` CronJob runs daily at 03:30. The first production
+  backup is `D:\server-backups\platform\daily-20260725T110627Z`; all four
+  artifact hashes and isolated extraction checks passed. H3/H4 remain blocked
+  on Phase G.
 - The Docker Compose observability files in the repository are legacy/local
   development assets, not the active D: server runtime.
