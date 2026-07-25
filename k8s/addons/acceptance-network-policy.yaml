@@ -18,3 +18,7 @@ spec:
         - podSelector: {}
       ports:
         - {protocol: TCP, port: 4443}
+    - to:
+        - podSelector: {}
+      ports:
+        - {protocol: TCP, port: 4566}

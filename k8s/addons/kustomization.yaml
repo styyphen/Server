@@ -5,6 +5,7 @@ resources:
   - acceptance-network-policy.yaml
   - azurite
   - fake-gcs
+  - localstack
 labels:
   - pairs:
       app.kubernetes.io/part-of: optional-development-services

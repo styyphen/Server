@@ -130,9 +130,50 @@ function Start-Addon {
     }
     foreach ($workload in $addons[$Name].Workloads) {
         Invoke-Kubectl -Arguments @('-n', $namespace, 'scale', $workload, '--replicas=1') | Out-Null
-        Invoke-Kubectl -Arguments @(
-            '-n', $namespace, 'rollout', 'status', $workload, "--timeout=${TimeoutSeconds}s"
-        ) | Out-Null
+        $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+        do {
+            Start-Sleep -Seconds 2
+            $workloadJson = (Invoke-Kubectl -Arguments @(
+                '-n', $namespace, 'get', $workload, '-o', 'json'
+            )) -join "`n"
+            $workloadState = $workloadJson | ConvertFrom-Json
+            $readyProperty = $workloadState.status.PSObject.Properties['readyReplicas']
+            $availableProperty = $workloadState.status.PSObject.Properties['availableReplicas']
+            $ready = if ($null -ne $readyProperty) {
+                [int]$readyProperty.Value
+            } elseif ($null -ne $availableProperty) {
+                [int]$availableProperty.Value
+            } else {
+                0
+            }
+            if ($ready -gt 0) { break }
+
+            $podJson = (Invoke-Kubectl -Arguments @(
+                '-n', $namespace, 'get', 'pods',
+                '-l', "platform.dev.home.arpa/addon=$Name", '-o', 'json'
+            )) -join "`n"
+            $pods = $podJson | ConvertFrom-Json
+            $fatalReasons = @($pods.items | ForEach-Object {
+                $statusesProperty = $_.status.PSObject.Properties['containerStatuses']
+                if ($null -ne $statusesProperty) {
+                    $statusesProperty.Value | ForEach-Object {
+                        $waitingProperty = $_.state.PSObject.Properties['waiting']
+                        if ($null -ne $waitingProperty) {
+                            $reasonProperty = $waitingProperty.Value.PSObject.Properties['reason']
+                            if ($null -ne $reasonProperty) { $reasonProperty.Value }
+                        }
+                    }
+                }
+            } | Where-Object {
+                $_ -in @('CrashLoopBackOff', 'CreateContainerConfigError', 'ImagePullBackOff', 'ErrImagePull')
+            })
+            if ($fatalReasons.Count -gt 0) {
+                throw "Add-on '$Name' startup entered $($fatalReasons -join ', ')."
+            }
+        } while ((Get-Date) -lt $deadline)
+        if ($ready -lt 1) {
+            throw "Add-on '$Name' did not become Ready within $TimeoutSeconds seconds."
+        }
     }
     Write-AddonEvent -Level info -Event addon_ready `
         -Message "Add-on '$Name' is Ready." -Data @{ addon = $Name }

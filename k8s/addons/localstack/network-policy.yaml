@@ -1,0 +1,15 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: localstack
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: localstack
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - podSelector: {}
+      ports:
+        - {protocol: TCP, port: 4566}
+  egress: []
