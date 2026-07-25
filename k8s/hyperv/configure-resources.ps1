@@ -8,7 +8,7 @@ $ErrorActionPreference = 'Stop'
 
 try {
     Set-VMMemory -VMName $VmName -DynamicMemoryEnabled $true `
-        -MinimumBytes 5GB -StartupBytes 5GB -MaximumBytes 8GB -Buffer 5
+        -MinimumBytes 5GB -StartupBytes 5GB -MaximumBytes 7GB -Buffer 5
     Set-VMProcessor -VMName $VmName -Count 6
     Set-VM -Name $VmName -AutomaticStartAction Start -AutomaticStartDelay 15 `
         -AutomaticStopAction ShutDown -AutomaticCheckpointsEnabled $false

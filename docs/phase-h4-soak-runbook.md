@@ -44,3 +44,9 @@ events even when the automated gate passes.
 Any failed daily cycle is an incident. Correct the underlying problem, retain
 the failed report, and restart a new seven-day window rather than overwriting
 evidence.
+
+The pre-window validation on 2026-07-25 found that Linux did not return
+released dynamic memory to Hyper-V promptly after sequential add-ons. The VM
+maximum was therefore tightened from 8 GiB to 7 GiB, above H3's observed
+6.84-GiB peak, so repeated cycles cannot consume the Windows reserve merely
+through retained balloon assignment.
