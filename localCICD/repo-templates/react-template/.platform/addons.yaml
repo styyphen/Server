@@ -1,0 +1,4 @@
+schema_version: 1
+# Allowed values: azurite, fake-gcs, localstack, sonarqube.
+# Keep this list empty unless a test or manually triggered pipeline needs one.
+optional_services: []

@@ -48,6 +48,7 @@ Create a pull request before merging into `main`.
 .editorconfig
 .gitleaks.toml
 .pre-commit-config.yaml
+.platform/addons.yaml
 commitlint.config.js
 Dockerfile
 docker-compose.yml
@@ -117,6 +118,12 @@ references in an overlay rather than editing the base.
 The included `local` overlay creates a project-specific namespace with
 Restricted Pod Security enforcement. Update its image tag to an immutable
 release tag or digest before deployment.
+
+Optional platform services are deny-by-default. Declare only services required
+by integration tests or a manually triggered analysis in
+`.platform/addons.yaml`. Valid names are `azurite`, `fake-gcs`, `localstack`,
+and `sonarqube`; ordinary build, lint, unit-test, and packaging jobs must leave
+the list empty.
 
 Platform maintainers can validate all four generated repository contracts with:
 

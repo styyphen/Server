@@ -154,10 +154,16 @@ Updated 2026-07-25:
   repository templates now have render-validated Kubernetes bases and local
   overlays with resources, probes, Restricted Pod Security, OTLP settings,
   and NetworkPolicies. Generated-repository contract validation covers every
-  template. Only reversible H2 work may proceed until Phase G passes; cutover,
-  soak acceptance, and rollback retirement remain deferred.
+  template. H2 and Phase G subsequently passed; cutover, soak acceptance, and
+  rollback retirement remain deferred.
 - Phase H2 completed before Phase G. Daily health and logical backup tasks,
   guarded weekly Registry garbage collection, and 14-day CI artifact retention
   are installed. The first scheduled-identity health and backup runs passed;
   backup hashes and isolated extraction passed; Registry returned Ready after
-  maintenance. H3 and H4 remain blocked until Phase G passes.
+  maintenance.
+- Phase G passed. Azurite, fake GCS, socketless LocalStack, and
+  SonarQube/PostgreSQL passed isolated and sequential API tests. Platform
+  health remained green while each service was active, the Windows reserve
+  stayed above 4 GiB, and every add-on reliably returned to zero. The final
+  report is `D:\HyperV\operations\addons\phase-g-20260725T125130Z.json`.
+  H3 resilience acceptance is next.

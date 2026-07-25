@@ -77,6 +77,14 @@ try {
         if ($overlay -notmatch "namespace: $([regex]::Escape($projectName))") {
             throw "Generated '$template' resources are not assigned to the project namespace."
         }
+        $addonDeclaration = Join-Path $projectPath '.platform/addons.yaml'
+        if (-not (Test-Path -LiteralPath $addonDeclaration -PathType Leaf)) {
+            throw "Generated '$template' repository has no optional-service declaration."
+        }
+        $addonContent = Get-Content -Raw -LiteralPath $addonDeclaration
+        if ($addonContent -notmatch '(?m)^optional_services:\s*\[\]\s*$') {
+            throw "Generated '$template' repository must deny optional services by default."
+        }
         if ($template -eq "worker-service" -and $base -match "(?m)^kind: Service$") {
             throw "Worker template must not expose a Kubernetes Service."
         }

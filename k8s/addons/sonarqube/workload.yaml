@@ -172,8 +172,8 @@ spec:
             - {name: SONAR_JDBC_URL, value: "jdbc:postgresql://sonarqube-postgresql:5432/sonarqube"}
             - {name: SONAR_JDBC_USERNAME, valueFrom: {secretKeyRef: {name: sonarqube-database, key: username}}}
             - {name: SONAR_JDBC_PASSWORD, valueFrom: {secretKeyRef: {name: sonarqube-database, key: password}}}
-            - {name: SONAR_WEB_JAVAOPTS, value: "-Xms256m -Xmx512m"}
-            - {name: SONAR_CE_JAVAOPTS, value: "-Xms256m -Xmx512m"}
+            - {name: SONAR_WEB_JAVAOPTS, value: "-Xms128m -Xmx320m"}
+            - {name: SONAR_CE_JAVAOPTS, value: "-Xms128m -Xmx320m"}
             - {name: SONAR_SEARCH_JAVAOPTS, value: "-Xms512m -Xmx512m"}
           ports:
             - {name: http, containerPort: 9000}

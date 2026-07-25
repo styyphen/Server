@@ -140,6 +140,27 @@ Daily health, logical backup, Registry maintenance, CI artifact retention, and
 monthly rehearsal procedures are documented in the
 [Phase H2 operations runbook](../docs/phase-h2-operations-runbook.md).
 
+## Phase G optional add-ons
+
+All optional add-ons are installed at zero replicas. Use the lifecycle wrapper;
+do not scale workloads directly:
+
+```powershell
+./k8s/operations/manage-addon.ps1 -Name azurite -Action accept
+./k8s/operations/manage-addon.ps1 -Name fake-gcs -Action accept
+./k8s/operations/manage-addon.ps1 -Name localstack -Action accept
+./k8s/operations/manage-addon.ps1 -Name sonarqube -Action accept
+```
+
+Run the complete mutually exclusive acceptance sequence with:
+
+```powershell
+./k8s/operations/invoke-phase-g-acceptance.ps1
+```
+
+See [Phase G completion](../docs/phase-g-completion.md) for versions, capacity
+evidence, and the external Secret requirement.
+
 ## Important limitations
 
 - This is not high availability.
