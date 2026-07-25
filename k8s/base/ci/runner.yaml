@@ -76,6 +76,10 @@ spec:
               value: local-k3s-stage-f
             - name: PATH
               value: /opt/kubectl-image/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+            - name: HOME
+              value: /tmp/runner-home
+            - name: XDG_CACHE_HOME
+              value: /tmp/runner-cache
           resources:
             requests:
               cpu: 100m

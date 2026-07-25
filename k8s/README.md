@@ -72,9 +72,9 @@ kubectl apply -k ./k8s/overlays/current
 The current overlay intentionally does not contain Secret values. Create
 `platform-tls`, `gitea-secrets`, and `registry-auth` in `platform-system`;
 `grafana-admin` and `grafana-tls` in `observability`; and
-`gitea-runner-registration` with a `token` key in `ci-jobs` before applying it
-to a new cluster. Runtime credentials remain under `D:\HyperV\credentials`,
-outside Git.
+`gitea-runner-registration` with a `token` key and `ci-registry-auth` with
+`username` and `password` keys in `ci-jobs` before applying it to a new
+cluster. Runtime credentials remain under `D:\HyperV\credentials`, outside Git.
 
 ## Phase F runner bootstrap
 
@@ -88,9 +88,19 @@ The pinned Kubernetes client is exposed through a read-only OCI image volume.
 `/opt/ci/run-native-smoke.sh` launches the first native Job with explicit
 requests/limits, restricted pod security, a two-minute active deadline, no
 retry, and a five-minute cleanup TTL. The matching manually dispatched workflow
-is in `samples/platform-smoke/.gitea/workflows/native-job-smoke.yml`. Do not
-route general repository workflows to this label until source checkout and
-per-run credential handling are implemented.
+is in `samples/platform-smoke/.gitea/workflows/native-job-smoke.yml`.
+
+`/opt/ci/run-representative-pipeline.sh` runs cheap checks before image work,
+publishes an OCI image with Crane without a container daemon, scans it with
+Trivy, generates an SPDX JSON SBOM with Syft, and writes test, coverage, scan,
+SBOM, and immutable image-digest artifacts to the bounded 1-GiB artifact PVC.
+The matching workflow is
+`samples/platform-smoke/.gitea/workflows/representative-ci.yml`.
+
+Pipeline output uses timestamped `level`, `event`, and `message` fields.
+Failures immediately include Job and pod state, every init/main container exit
+reason and log, and related Kubernetes events. Scanner download progress is
+suppressed while diagnostic detail is retained.
 
 Create an instance runner registration token in Gitea, store it outside Git,
 and create the external Secret:
@@ -98,6 +108,9 @@ and create the external Secret:
 ```powershell
 kubectl -n ci-jobs create secret generic gitea-runner-registration `
   --from-literal=token='<registration-token>'
+kubectl -n ci-jobs create secret generic ci-registry-auth `
+  --from-literal=username='<registry-username>' `
+  --from-literal=password='<registry-password>'
 kubectl apply --dry-run=server -k ./k8s/overlays/current
 kubectl apply -k ./k8s/overlays/current
 kubectl -n ci-jobs rollout status deployment/gitea-runner --timeout=120s
@@ -112,6 +125,13 @@ Validate native Job execution directly:
 kubectl -n ci-jobs exec deployment/gitea-runner -- `
   /opt/ci/run-native-smoke.sh
 kubectl -n ci-jobs get jobs,pods
+```
+
+Validate the representative pipeline directly:
+
+```powershell
+kubectl -n ci-jobs exec deployment/gitea-runner -- `
+  /opt/ci/run-representative-pipeline.sh
 ```
 
 ## Important limitations

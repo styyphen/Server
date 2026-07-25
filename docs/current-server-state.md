@@ -107,13 +107,18 @@ CLI; its password is also stored outside Git.
 - Phase E is complete. E1 through E4, full-VM reboot recovery, capacity checks,
   controlled telemetry and alert tests, and logical backup/restore testing
   passed.
-- Phase F is in progress. The capacity-one Gitea runner is registered and
-  healthy in `ci-jobs`, uses no Docker socket, has a bounded 1-GiB PVC, and
-  consumes 100m CPU/128 MiB requested at idle. Native Job execution passed with
-  restricted pod security, explicit resources, a deadline, zero retries, and a
-  cleanup TTL. Runner RBAC permits namespaced Job lifecycle and pod logs but
-  denies Deployment creation and Secret reads. It remains restricted to the
-  `stage-f-orchestrator` label until source checkout, per-run credentials, and
-  socketless image building are implemented and accepted.
+- Phase F is complete. Gitea Actions run through one capacity-one runner using
+  the `stage-f-orchestrator` label. Cheap checks execute before image work.
+  Native Jobs enforce Restricted Pod Security, explicit resources, deadlines,
+  zero retries, and cleanup TTLs. Crane publishes without Docker/containerd/
+  Podman sockets; Trivy scans the published image; Syft emits an SPDX JSON SBOM.
+  Test, coverage, scan, SBOM, and immutable digest artifacts persist on a
+  bounded 1-GiB PVC. Runner RBAC permits namespaced Job lifecycle, pod logs,
+  and event reads, but denies Deployment creation and Secret reads.
+- Gitea Actions run `2` for `developer-admin/phase-d-smoke` completed
+  successfully at commit `e0e7e262403cd228047f6f1ebe9ba73098efbfc9`.
+  Post-run Windows free memory was 4.67 GiB; VM assigned/demand memory was
+  6.07/4.85 GiB; K3s memory was 69%; and Gitea plus all observability pods
+  remained Ready.
 - The Docker Compose observability files in the repository are legacy/local
   development assets, not the active D: server runtime.

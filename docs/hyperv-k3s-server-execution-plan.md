@@ -142,10 +142,11 @@ Updated 2026-07-25:
   full-VM reboot recovery, capacity gates, and logical backup/restore testing
   passed. The backup is at
   `D:\server-backups\observability\phase-e-20260725`.
-- Phase F is in progress: Gitea Runner `1.0.0` is deployed with capacity one,
-  no Docker socket, a bounded PVC, restricted networking, and the dedicated
-  `stage-f-orchestrator` label. Native Kubernetes Job execution passed with
-  least-privilege RBAC, explicit resources, a deadline, zero retries, restricted
-  pod security, and automatic cleanup. Source checkout and per-run credentials,
-  socketless image builds, bounded artifacts, and representative pipeline
-  acceptance remain.
+- Phase F passed: Gitea Runner `1.0.0` has capacity one, restricted networking,
+  least-privilege RBAC, and the dedicated `stage-f-orchestrator` label. Ordered
+  native Jobs passed with explicit resources, deadlines, zero retries,
+  Restricted Pod Security, and automatic cleanup. Crane published an image
+  without any Docker/containerd/Podman socket, Trivy scanned it, Syft generated
+  an SPDX JSON SBOM, and all required outputs persisted on a bounded artifact
+  PVC. Gitea Actions run `2` completed successfully without degrading Gitea,
+  observability, Windows memory reserve, or K3s capacity. Phase G is next.
