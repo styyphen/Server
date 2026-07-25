@@ -27,3 +27,15 @@ spec:
       ports:
         - protocol: TCP
           port: 3000
+    - to:
+        - ipBlock:
+            cidr: 10.43.0.1/32
+      ports:
+        - protocol: TCP
+          port: 443
+    - to:
+        - ipBlock:
+            cidr: 192.168.50.10/32
+      ports:
+        - protocol: TCP
+          port: 6443

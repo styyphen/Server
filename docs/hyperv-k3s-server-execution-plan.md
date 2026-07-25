@@ -144,6 +144,8 @@ Updated 2026-07-25:
   `D:\server-backups\observability\phase-e-20260725`.
 - Phase F is in progress: Gitea Runner `1.0.0` is deployed with capacity one,
   no Docker socket, a bounded PVC, restricted networking, and the dedicated
-  `stage-f-orchestrator` label. Native Kubernetes Job execution, socketless
-  image builds, bounded artifacts, and representative pipeline acceptance
-  remain.
+  `stage-f-orchestrator` label. Native Kubernetes Job execution passed with
+  least-privilege RBAC, explicit resources, a deadline, zero retries, restricted
+  pod security, and automatic cleanup. Source checkout and per-run credentials,
+  socketless image builds, bounded artifacts, and representative pipeline
+  acceptance remain.

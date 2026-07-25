@@ -1,0 +1,12 @@
+name: Native Kubernetes job smoke
+
+on:
+  workflow_dispatch:
+
+jobs:
+  native-job:
+    runs-on: stage-f-orchestrator
+    timeout-minutes: 5
+    steps:
+      - name: Launch bounded native job
+        run: /opt/ci/run-native-smoke.sh

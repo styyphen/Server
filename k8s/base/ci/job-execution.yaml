@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ci-job
+automountServiceAccountToken: false
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ci-job-launcher
+rules:
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["create", "get", "list", "watch", "delete"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: gitea-runner-job-launcher
+subjects:
+  - kind: ServiceAccount
+    name: gitea-runner
+    namespace: ci-jobs
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ci-job-launcher
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ci-job-launcher
+data:
+  run-native-smoke.sh: |
+    #!/bin/sh
+    set -eu
+
+    run_id="${GITHUB_RUN_ID:-manual}"
+    safe_id="$(printf '%s' "$run_id" | tr -cd 'a-zA-Z0-9-' | tr 'A-Z' 'a-z' | cut -c1-32)"
+    [ -n "$safe_id" ] || safe_id="manual"
+    job_name="native-ci-smoke-${safe_id}"
+
+    kubectl delete job "$job_name" --ignore-not-found --wait=true
+    kubectl apply -f - <<EOF
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: ${job_name}
+      labels:
+        app.kubernetes.io/name: native-ci-smoke
+        app.kubernetes.io/component: ci-check
+    spec:
+      activeDeadlineSeconds: 120
+      backoffLimit: 0
+      ttlSecondsAfterFinished: 300
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: native-ci-smoke
+            app.kubernetes.io/component: ci-check
+        spec:
+          serviceAccountName: ci-job
+          automountServiceAccountToken: false
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: check
+              image: docker.io/library/busybox:1.36.1
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/sh
+                - -c
+                - >-
+                  echo "native Kubernetes CI job passed";
+                  test ! -S /var/run/docker.sock
+              resources:
+                requests:
+                  cpu: 25m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 64Mi
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+                readOnlyRootFilesystem: true
+    EOF
+
+    if ! kubectl wait --for=condition=complete "job/${job_name}" --timeout=130s; then
+      kubectl describe "job/${job_name}"
+      kubectl logs "job/${job_name}" --all-containers=true || true
+      exit 1
+    fi
+    kubectl logs "job/${job_name}" --all-containers=true

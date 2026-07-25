@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: gitea-runner
-automountServiceAccountToken: false
+automountServiceAccountToken: true
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -53,7 +53,7 @@ spec:
         app.kubernetes.io/component: ci-orchestrator
     spec:
       serviceAccountName: gitea-runner
-      automountServiceAccountToken: false
+      automountServiceAccountToken: true
       securityContext:
         fsGroup: 1000
         seccompProfile:
@@ -74,6 +74,8 @@ spec:
                   key: token
             - name: GITEA_RUNNER_NAME
               value: local-k3s-stage-f
+            - name: PATH
+              value: /opt/kubectl-image/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
           resources:
             requests:
               cpu: 100m
@@ -105,6 +107,12 @@ spec:
               mountPath: /data
             - name: tmp
               mountPath: /tmp
+            - name: kubectl-image
+              mountPath: /opt/kubectl-image
+              readOnly: true
+            - name: launcher
+              mountPath: /opt/ci
+              readOnly: true
       terminationGracePeriodSeconds: 45
       volumes:
         - name: config
@@ -116,3 +124,11 @@ spec:
         - name: tmp
           emptyDir:
             sizeLimit: 256Mi
+        - name: kubectl-image
+          image:
+            reference: registry.k8s.io/kubectl:v1.36.1
+            pullPolicy: IfNotPresent
+        - name: launcher
+          configMap:
+            name: ci-job-launcher
+            defaultMode: 0555

@@ -109,8 +109,11 @@ CLI; its password is also stored outside Git.
   passed.
 - Phase F is in progress. The capacity-one Gitea runner is registered and
   healthy in `ci-jobs`, uses no Docker socket, has a bounded 1-GiB PVC, and
-  consumes 100m CPU/128 MiB requested at idle. It is restricted to the
-  `stage-f-orchestrator` label until native Kubernetes Job execution and
+  consumes 100m CPU/128 MiB requested at idle. Native Job execution passed with
+  restricted pod security, explicit resources, a deadline, zero retries, and a
+  cleanup TTL. Runner RBAC permits namespaced Job lifecycle and pod logs but
+  denies Deployment creation and Secret reads. It remains restricted to the
+  `stage-f-orchestrator` label until source checkout, per-run credentials, and
   socketless image building are implemented and accepted.
 - The Docker Compose observability files in the repository are legacy/local
   development assets, not the active D: server runtime.

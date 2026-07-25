@@ -78,12 +78,19 @@ outside Git.
 
 ## Phase F runner bootstrap
 
-The first Phase F increment deploys one Gitea runner with capacity one. It uses
-the dedicated `stage-f-orchestrator` host label, has no Docker socket, cannot
-authenticate to the Kubernetes API, and can only reach Gitea and cluster DNS.
-Do not route general repository workflows to this label yet. It is the bounded
-control-plane runner for the native Kubernetes Job pipeline added in the next
-increment.
+The Phase F runner has capacity one and uses the dedicated
+`stage-f-orchestrator` host label. It has no Docker socket. Its service account
+can create and observe Jobs and read pod logs only in `ci-jobs`; it cannot
+create Deployments or read Secrets. Network access is limited to DNS, Gitea,
+and the K3s API.
+
+The pinned Kubernetes client is exposed through a read-only OCI image volume.
+`/opt/ci/run-native-smoke.sh` launches the first native Job with explicit
+requests/limits, restricted pod security, a two-minute active deadline, no
+retry, and a five-minute cleanup TTL. The matching manually dispatched workflow
+is in `samples/platform-smoke/.gitea/workflows/native-job-smoke.yml`. Do not
+route general repository workflows to this label until source checkout and
+per-run credential handling are implemented.
 
 Create an instance runner registration token in Gitea, store it outside Git,
 and create the external Secret:
@@ -98,6 +105,14 @@ kubectl -n ci-jobs rollout status deployment/gitea-runner --timeout=120s
 
 The runner registration file persists in a bounded 1-GiB PVC so pod restarts do
 not create duplicate runner registrations.
+
+Validate native Job execution directly:
+
+```powershell
+kubectl -n ci-jobs exec deployment/gitea-runner -- `
+  /opt/ci/run-native-smoke.sh
+kubectl -n ci-jobs get jobs,pods
+```
 
 ## Important limitations
 

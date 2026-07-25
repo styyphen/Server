@@ -3,4 +3,5 @@ kind: Kustomization
 namespace: ci-jobs
 resources:
   - runner.yaml
+  - job-execution.yaml
   - network-policies.yaml
