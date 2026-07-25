@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - ../single-server
   - ../../base/platform
+  - ../../base/observability
 labels:
   - pairs:
       app.kubernetes.io/part-of: local-development-platform

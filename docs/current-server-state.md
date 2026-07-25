@@ -1,6 +1,6 @@
 # Current D: Server State
 
-Verified 2026-07-23 against the running Hyper-V VM and Kubernetes API.
+Verified 2026-07-24 against the running Hyper-V VM and Kubernetes API.
 
 ## Source of truth
 
@@ -57,6 +57,9 @@ and default-deny network policies are active.
 |---|---|---|---|
 | Gitea rootless | `1.26.2` | 10 GiB data + 1 GiB config | `https://gitea.dev.home.arpa` |
 | Distribution Registry | `3.1.1` | 20 GiB | `https://registry.dev.home.arpa` |
+| Prometheus | `3.1.0` | 10 GiB | Cluster-internal |
+| Alertmanager | `0.28.0` | 1 GiB | Cluster-internal |
+| Node exporter | `1.8.2` | None | Cluster-internal |
 
 Gitea SSH is exposed on node port `32222`. Registry access requires bcrypt
 authentication and TLS. K3s/containerd trusts the local CA and has registry
@@ -88,7 +91,8 @@ CLI; its password is also stored outside Git.
 ## Phase status
 
 - Phases A–D in `docs/hyperv-k3s-server-execution-plan.md` are complete.
-- Phase E is in progress but no observability workloads have been deployed to
-  K3s. Resume from `docs/phase-e-continuation-plan.md`.
+- Phase E is in progress. E1 (Prometheus, Alertmanager, and node-exporter) is
+  deployed and verified; E2 (Grafana) is next. Resume from
+  `docs/phase-e-continuation-plan.md`.
 - The Docker Compose observability files in the repository are legacy/local
   development assets, not the active D: server runtime.

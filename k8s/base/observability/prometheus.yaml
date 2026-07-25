@@ -1,0 +1,202 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+  namespace: observability
+automountServiceAccountToken: true
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: local-prometheus
+rules:
+  - apiGroups: [""]
+    resources: [nodes, nodes/metrics, nodes/proxy, services, endpoints, pods]
+    verbs: [get, list, watch]
+  - nonResourceURLs: [/metrics]
+    verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: local-prometheus
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: local-prometheus
+subjects:
+  - kind: ServiceAccount
+    name: prometheus
+    namespace: observability
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: observability
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 30s
+      evaluation_interval: 30s
+      external_labels:
+        cluster: local-k3s-server
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets: [alertmanager.observability.svc.cluster.local:9093]
+    rule_files:
+      - /etc/prometheus/alerts.yml
+    scrape_configs:
+      - job_name: prometheus
+        static_configs:
+          - targets: [localhost:9090]
+      - job_name: alertmanager
+        static_configs:
+          - targets: [alertmanager.observability.svc.cluster.local:9093]
+      - job_name: kubernetes-apiserver
+        kubernetes_sd_configs:
+          - role: endpoints
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        authorization:
+          credentials_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+            action: keep
+            regex: default;kubernetes;https
+      - job_name: kubelet
+        scheme: https
+        metrics_path: /metrics
+        tls_config:
+          insecure_skip_verify: true
+        authorization:
+          credentials_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        kubernetes_sd_configs:
+          - role: node
+      - job_name: node-exporter
+        static_configs:
+          - targets: [node-exporter.kube-system.svc.cluster.local:9100]
+      - job_name: gitea
+        metrics_path: /metrics
+        static_configs:
+          - targets: [gitea.platform-system.svc.cluster.local:3000]
+      - job_name: registry
+        metrics_path: /metrics
+        static_configs:
+          - targets: [registry.platform-system.svc.cluster.local:5001]
+      - job_name: loki
+        static_configs:
+          - targets: [loki.observability.svc.cluster.local:3100]
+      - job_name: promtail
+        static_configs:
+          - targets: [promtail.kube-system.svc.cluster.local:9080]
+  alerts.yml: |
+    groups:
+      - name: local-server
+        rules:
+          - alert: NodeUnavailable
+            expr: up{job="node-exporter"} == 0
+            for: 2m
+            labels: {severity: critical}
+            annotations: {summary: Kubernetes node metrics are unavailable}
+          - alert: NodeMemoryPressure
+            expr: (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) > 0.80
+            for: 5m
+            labels: {severity: warning}
+            annotations: {summary: Node memory usage exceeds 80 percent}
+          - alert: NodeStoragePressure
+            expr: (1 - node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs"}) > 0.80
+            for: 5m
+            labels: {severity: warning}
+            annotations: {summary: Node filesystem usage exceeds 80 percent}
+          - alert: ControlledPhaseETest
+            expr: vector(0) == 1
+            labels: {severity: test}
+            annotations: {summary: Controlled Phase E alert test}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prometheus-data
+  namespace: observability
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: observability
+spec:
+  selector:
+    app.kubernetes.io/name: prometheus
+  ports:
+    - {name: http, port: 9090, targetPort: http}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: observability
+spec:
+  replicas: 1
+  strategy: {type: Recreate}
+  selector:
+    matchLabels: {app.kubernetes.io/name: prometheus}
+  template:
+    metadata:
+      labels: {app.kubernetes.io/name: prometheus}
+    spec:
+      serviceAccountName: prometheus
+      securityContext:
+        fsGroup: 65534
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: prometheus
+          image: docker.io/prom/prometheus:v3.1.0
+          args:
+            - --config.file=/etc/prometheus/prometheus.yml
+            - --storage.tsdb.path=/prometheus
+            - --storage.tsdb.retention.time=7d
+            - --storage.tsdb.retention.size=8GB
+            - --web.enable-lifecycle
+          ports:
+            - {name: http, containerPort: 9090}
+          resources:
+            requests: {cpu: 150m, memory: 384Mi}
+            limits: {cpu: 750m, memory: 768Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            readOnlyRootFilesystem: true
+          startupProbe:
+            httpGet: {path: /-/ready, port: http}
+            failureThreshold: 30
+            periodSeconds: 5
+          readinessProbe:
+            httpGet: {path: /-/ready, port: http}
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: {path: /-/healthy, port: http}
+            periodSeconds: 30
+          volumeMounts:
+            - {name: config, mountPath: /etc/prometheus, readOnly: true}
+            - {name: data, mountPath: /prometheus}
+            - {name: tmp, mountPath: /tmp}
+      volumes:
+        - name: config
+          configMap: {name: prometheus-config}
+        - name: data
+          persistentVolumeClaim: {claimName: prometheus-data}
+        - name: tmp
+          emptyDir: {sizeLimit: 64Mi}
+      terminationGracePeriodSeconds: 30

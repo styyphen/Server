@@ -137,8 +137,8 @@ Updated 2026-07-24:
 - Phase D passed: authenticated Gitea Git/PR and Registry image workflows,
   full-VM reboot persistence, and isolated logical backup/restore tests passed.
   The backup is at `D:\server-backups\platform\phase-d-20260723`.
-- Phase E is in progress. Observability components must fit the measured host
-  and guest resource reserve and will be introduced sequentially. Deployment is
-  paused at the preflight capacity gate because Windows measured 2.34 GiB
-  available, below the required 4 GiB. Resume with
-  `docs/phase-e-continuation-plan.md` after a controlled Windows restart.
+- Phase E is in progress. The controlled Windows restart resolved the preflight
+  capacity blocker. E1 (Prometheus, Alertmanager, and node-exporter) is deployed:
+  all seven configured scrape targets, a controlled alert, bounded PVCs, pod
+  readiness, and the post-deployment host/guest capacity gates passed. Resume
+  with E2 (Grafana) in `docs/phase-e-continuation-plan.md`.

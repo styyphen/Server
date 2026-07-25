@@ -20,12 +20,12 @@ Captured 2026-07-24 in the Africa/Johannesburg timezone.
 - Node: Ready
 - Gitea and Registry: Running and persistent
 - Phase D backups: present and previously restore-tested
-- Phase E workloads: not deployed
+- Phase E E1 workloads: deployed and verified
 
-The live server is healthy. Phase E stopped at its pre-deployment capacity gate,
-so no partial observability installation needs cleanup.
+The live server is healthy. The pre-deployment capacity gate passed after the
+controlled Windows restart, and E1 is complete. Resume with E2 (Grafana).
 
-## Active blocker
+## Resolved pre-deployment blocker
 
 The plan requires Windows to retain at least 4 GiB of available memory.
 Measurement on 2026-07-24 showed:
@@ -38,9 +38,20 @@ Measurement on 2026-07-24 showed:
 | Guest available memory | approximately 3.5 GiB |
 | Largest avoidable host consumer | Desktop Window Manager, approximately 1.28 GiB |
 
-WSL and Docker Desktop were stopped. Do not deploy Phase E until the Windows
-reserve passes. The recommended recovery is a controlled Windows restart, which
-also validates Hyper-V automatic VM startup.
+WSL and Docker Desktop remain stopped. A controlled Windows restart completed on
+2026-07-24 and also validated Hyper-V automatic VM startup.
+
+Post-restart validation:
+
+| Measurement | Value |
+|---|---:|
+| Windows available memory before E1 | 6.096, 6.113, 6.111 GiB |
+| Windows available memory after E1 | 5.966, 5.972, 5.972 GiB |
+| VM assigned memory | 5 GiB |
+| VM memory demand before E1 | 2.6 GiB |
+| Guest memory after E1 | 2,454 MiB (67%) |
+| Guest available memory after E1 | 3.1 GiB |
+| Guest root disk after E1 | 3% used |
 
 ## Resume procedure
 
@@ -86,6 +97,8 @@ also validates Hyper-V automatic VM startup.
 Exit gate: every settled Windows sample is at least 4 GiB, the node is Ready,
 and every non-completed pod is Ready without new crash loops.
 
+Status: passed on 2026-07-24.
+
 If the reserve still fails after restart, do not lower the VM below 5 GiB and do
 not weaken the 4-GiB host gate. Reassess host processes or increase physical
 RAM before deploying observability.
@@ -127,7 +140,20 @@ Use these rules:
 Rollback: scale both deployments to zero or remove only the E1 objects. Preserve
 their PVCs unless explicit deletion is approved.
 
+Status: completed and verified on 2026-07-24.
+
+- Prometheus, Alertmanager, and node-exporter are Ready.
+- Prometheus scrapes itself, Alertmanager, the K3s API, kubelet, node-exporter,
+  Gitea, and Registry; all seven targets were healthy.
+- Node unavailable, memory pressure, and storage pressure rules are loaded.
+- A short-lived controlled alert was accepted and visible in Alertmanager.
+- Prometheus and Alertmanager PVCs are Bound.
+- E1 requests are 480 MiB and limits are 1,024 MiB.
+- The post-E1 host and guest capacity gates passed.
+
 ### E2: Grafana
+
+Status: next increment; not deployed.
 
 1. Generate the administrator credential outside Git.
 2. Provision Prometheus, Loki, and Tempo data sources declaratively.

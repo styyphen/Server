@@ -67,6 +67,8 @@ spec:
               value: sqlite3
             - name: GITEA__database__PATH
               value: /var/lib/gitea/data/gitea/gitea.db
+            - name: GITEA__metrics__ENABLED
+              value: "true"
             - name: GITEA__security__INSTALL_LOCK
               value: "true"
             - name: GITEA__security__SECRET_KEY
@@ -184,6 +186,12 @@ spec:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: kube-system
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: observability
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
     - ports:
         - port: 2222
           protocol: TCP
