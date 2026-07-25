@@ -1,0 +1,16 @@
+name: Representative safe CI
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: representative-${{ gitea.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pipeline:
+    runs-on: stage-f-orchestrator
+    timeout-minutes: 15
+    steps:
+      - name: Run ordered native pipeline
+        run: /opt/ci/run-representative-pipeline.sh

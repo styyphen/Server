@@ -189,6 +189,23 @@ spec:
     - from:
         - namespaceSelector:
             matchLabels:
+              kubernetes.io/metadata.name: ci-jobs
+      ports:
+        - port: 5000
+          protocol: TCP
+    # K3s may preserve the pod address or masquerade same-node ClusterIP
+    # traffic through the Flannel gateway or the single node address.
+    - from:
+        - ipBlock:
+            cidr: 10.42.0.0/16
+        - ipBlock:
+            cidr: 192.168.50.10/32
+      ports:
+        - port: 5000
+          protocol: TCP
+    - from:
+        - namespaceSelector:
+            matchLabels:
               kubernetes.io/metadata.name: observability
           podSelector:
             matchLabels:

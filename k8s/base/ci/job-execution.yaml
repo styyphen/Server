@@ -18,6 +18,9 @@ rules:
   - apiGroups: [""]
     resources: ["pods/log"]
     verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["get", "list", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -104,3 +107,347 @@ data:
       exit 1
     fi
     kubectl logs "job/${job_name}" --all-containers=true
+  run-representative-pipeline.sh: |
+    #!/bin/sh
+    set -eu
+
+    log() {
+      level="$1"
+      event="$2"
+      shift 2
+      message="$*"
+      printf 'timestamp=%s level=%s event=%s message="%s"\n' \
+        "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$level" "$event" "$message"
+    }
+
+    job_diagnostics() {
+      name="$1"
+      pod="$(kubectl get pods -l "job-name=${name}" -o jsonpath='{.items[0].metadata.name}' 2>/dev/null || true)"
+      log error job_failed "job=${name} pod=${pod:-unknown}"
+      kubectl get "job/${name}" -o wide || true
+      kubectl describe "job/${name}" || true
+      [ -n "$pod" ] || return 0
+      pod_reason="$(kubectl get "pod/${pod}" -o jsonpath='{.status.reason}' 2>/dev/null || true)"
+      pod_message="$(kubectl get "pod/${pod}" -o jsonpath='{.status.message}' 2>/dev/null || true)"
+      log error pod_status "job=${name} pod=${pod} reason=${pod_reason:-unknown} detail=${pod_message:-none}"
+      kubectl get "pod/${pod}" -o wide || true
+      containers="$(kubectl get "pod/${pod}" -o jsonpath='{.spec.initContainers[*].name} {.spec.containers[*].name}' 2>/dev/null || true)"
+      for container in $containers; do
+        reason="$(kubectl get "pod/${pod}" -o "jsonpath={.status.initContainerStatuses[?(@.name=='${container}')].state.terminated.reason}{.status.containerStatuses[?(@.name=='${container}')].state.terminated.reason}" 2>/dev/null || true)"
+        exit_code="$(kubectl get "pod/${pod}" -o "jsonpath={.status.initContainerStatuses[?(@.name=='${container}')].state.terminated.exitCode}{.status.containerStatuses[?(@.name=='${container}')].state.terminated.exitCode}" 2>/dev/null || true)"
+        log error container_status "job=${name} container=${container} reason=${reason:-pending} exit_code=${exit_code:-unknown}"
+        kubectl logs "pod/${pod}" -c "$container" --timestamps --tail=-1 2>/dev/null || true
+        kubectl logs "pod/${pod}" -c "$container" --previous --timestamps --tail=-1 2>/dev/null || true
+      done
+      log error kubernetes_events "job=${name} pod=${pod}"
+      kubectl get events --field-selector "involvedObject.name=${pod}" --sort-by=.lastTimestamp || true
+    }
+
+    run_id="${GITHUB_RUN_ID:-manual}"
+    safe_id="$(printf '%s' "$run_id" | tr -cd 'a-zA-Z0-9-' | tr 'A-Z' 'a-z' | cut -c1-32)"
+    [ -n "$safe_id" ] || safe_id="manual"
+    image="registry.platform-system.svc.cluster.local:5000/platform-smoke:${safe_id}"
+
+    wait_for_job() {
+      name="$1"
+      stage="$2"
+      if ! kubectl get "job/${name}" >/dev/null 2>&1; then
+        log error job_missing "stage=${stage} job=${name} manifest was not created"
+        return 1
+      fi
+      deadline="$(( $(date +%s) + 320 ))"
+      log info job_wait "stage=${stage} job=${name}"
+      while :; do
+        succeeded="$(kubectl get "job/${name}" -o jsonpath='{.status.succeeded}')"
+        failed="$(kubectl get "job/${name}" -o jsonpath='{.status.failed}')"
+        if [ "${succeeded:-0}" -ge 1 ]; then
+          log info job_complete "stage=${stage} job=${name}"
+          kubectl logs "job/${name}" --all-containers=true --timestamps
+          return 0
+        fi
+        if [ "${failed:-0}" -ge 1 ] || [ "$(date +%s)" -ge "$deadline" ]; then
+          job_diagnostics "$name"
+          return 1
+        fi
+        sleep 2
+      done
+    }
+
+    cheap_job="ci-cheap-${safe_id}"
+    log info stage_start "stage=cheap job=${cheap_job}"
+    kubectl delete job "$cheap_job" --ignore-not-found --wait=true
+    kubectl apply -f - <<EOF
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: ${cheap_job}
+      labels:
+        app.kubernetes.io/name: representative-ci
+        ci.stage: cheap
+    spec:
+      activeDeadlineSeconds: 120
+      backoffLimit: 0
+      ttlSecondsAfterFinished: 600
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: representative-ci
+            ci.stage: cheap
+        spec:
+          serviceAccountName: ci-job
+          automountServiceAccountToken: false
+          restartPolicy: Never
+          securityContext:
+            fsGroup: 65534
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: checks
+              image: docker.io/library/busybox:1.36.1
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -eu
+                  out="/artifacts/${safe_id}"
+                  mkdir -p "\$out"
+                  test ! -S /var/run/docker.sock
+                  printf '%s\n' '<testsuite name="cheap-checks" tests="2" failures="0"><testcase name="format"/><testcase name="unit"/></testsuite>' > "\$out/test-results.xml"
+                  printf '%s\n' '{"line-rate":1.0,"lines-covered":2,"lines-valid":2}' > "\$out/coverage.json"
+                  echo "cheap checks passed"
+              resources:
+                requests: {cpu: 25m, memory: 32Mi}
+                limits: {cpu: 100m, memory: 64Mi}
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities: {drop: ["ALL"]}
+                readOnlyRootFilesystem: true
+              volumeMounts:
+                - {name: artifacts, mountPath: /artifacts}
+          volumes:
+            - name: artifacts
+              persistentVolumeClaim: {claimName: ci-artifacts}
+    EOF
+    wait_for_job "$cheap_job" cheap
+
+    image_job="ci-image-${safe_id}"
+    log info stage_start "stage=image job=${image_job} image=${image}"
+    kubectl delete job "$image_job" --ignore-not-found --wait=true
+    kubectl apply -f - <<EOF
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: ${image_job}
+      labels:
+        app.kubernetes.io/name: representative-ci
+        ci.stage: image
+    spec:
+      activeDeadlineSeconds: 180
+      backoffLimit: 0
+      ttlSecondsAfterFinished: 600
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: representative-ci
+            ci.stage: image
+        spec:
+          serviceAccountName: ci-job
+          automountServiceAccountToken: false
+          restartPolicy: Never
+          securityContext:
+            fsGroup: 65534
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: publish
+              image: docker.io/library/busybox:1.36.1
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -eu
+                  auth="\$(printf '%s:%s' "\$REGISTRY_USERNAME" "\$REGISTRY_PASSWORD" | base64 | tr -d '\n')"
+                  mkdir -p /workspace/rootfs /workspace/docker
+                  printf '%s\n' 'Stage F socketless image' > /workspace/rootfs/index.txt
+                  tar -cf /workspace/layer.tar -C /workspace/rootfs .
+                  printf '{"auths":{"registry.platform-system.svc.cluster.local:5000":{"auth":"%s"}}}\n' "\$auth" > /workspace/docker/config.json
+                  export DOCKER_CONFIG=/workspace/docker
+                  published="\$(/opt/crane/ko-app/crane append --insecure -f /workspace/layer.tar -t "${image}")"
+                  printf '%s\n' "\$published" | tee "/artifacts/${safe_id}/image-digest.txt"
+                  printf '%s\n' "\$published" | grep -q '@sha256:'
+                  echo "socketless image published"
+              env:
+                - name: REGISTRY_USERNAME
+                  valueFrom: {secretKeyRef: {name: ci-registry-auth, key: username}}
+                - name: REGISTRY_PASSWORD
+                  valueFrom: {secretKeyRef: {name: ci-registry-auth, key: password}}
+              resources:
+                requests: {cpu: 50m, memory: 64Mi}
+                limits: {cpu: 250m, memory: 256Mi}
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities: {drop: ["ALL"]}
+                readOnlyRootFilesystem: true
+              volumeMounts:
+                - {name: artifacts, mountPath: /artifacts}
+                - {name: workspace, mountPath: /workspace}
+                - {name: crane, mountPath: /opt/crane, readOnly: true}
+          volumes:
+            - name: artifacts
+              persistentVolumeClaim: {claimName: ci-artifacts}
+            - name: workspace
+              emptyDir: {sizeLimit: 128Mi}
+            - name: crane
+              image:
+                reference: gcr.io/go-containerregistry/crane:v0.20.3
+                pullPolicy: IfNotPresent
+    EOF
+    wait_for_job "$image_job" image
+
+    scan_job="ci-scan-${safe_id}"
+    log info stage_start "stage=scan job=${scan_job} image=${image}"
+    kubectl delete job "$scan_job" --ignore-not-found --wait=true
+    kubectl apply -f - <<EOF
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: ${scan_job}
+      labels:
+        app.kubernetes.io/name: representative-ci
+        ci.stage: scan
+    spec:
+      activeDeadlineSeconds: 300
+      backoffLimit: 0
+      ttlSecondsAfterFinished: 600
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: representative-ci
+            ci.stage: scan
+        spec:
+          serviceAccountName: ci-job
+          automountServiceAccountToken: false
+          restartPolicy: Never
+          securityContext:
+            fsGroup: 65534
+            runAsNonRoot: true
+            runAsUser: 65534
+            runAsGroup: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          initContainers:
+            - name: vulnerability-scan
+              image: docker.io/aquasec/trivy:0.61.1
+              args:
+                - image
+                - --db-repository
+                - ghcr.io/aquasecurity/trivy-db:2
+                - --cache-dir
+                - /artifacts/.trivy-cache
+                - --no-progress
+                - --insecure
+                - --username
+                - \$(REGISTRY_USERNAME)
+                - --password
+                - \$(REGISTRY_PASSWORD)
+                - --format
+                - json
+                - --output
+                - /artifacts/${safe_id}/scan.json
+                - --severity
+                - HIGH,CRITICAL
+                - --exit-code
+                - "1"
+                - ${image}
+              env:
+                - name: REGISTRY_USERNAME
+                  valueFrom: {secretKeyRef: {name: ci-registry-auth, key: username}}
+                - name: REGISTRY_PASSWORD
+                  valueFrom: {secretKeyRef: {name: ci-registry-auth, key: password}}
+              resources:
+                requests: {cpu: 100m, memory: 128Mi}
+                limits: {cpu: 500m, memory: 512Mi}
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities: {drop: ["ALL"]}
+                readOnlyRootFilesystem: true
+              volumeMounts:
+                - {name: artifacts, mountPath: /artifacts}
+                - {name: tmp, mountPath: /tmp}
+            - name: prepare-syft-auth
+              image: docker.io/library/busybox:1.36.1
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -eu
+                  auth="\$(printf '%s:%s' "\$REGISTRY_USERNAME" "\$REGISTRY_PASSWORD" | base64 | tr -d '\n')"
+                  printf '{"auths":{"registry.platform-system.svc.cluster.local:5000":{"auth":"%s"}}}\n' "\$auth" > /docker-config/config.json
+              env:
+                - name: REGISTRY_USERNAME
+                  valueFrom: {secretKeyRef: {name: ci-registry-auth, key: username}}
+                - name: REGISTRY_PASSWORD
+                  valueFrom: {secretKeyRef: {name: ci-registry-auth, key: password}}
+              resources:
+                requests: {cpu: 10m, memory: 16Mi}
+                limits: {cpu: 50m, memory: 32Mi}
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities: {drop: ["ALL"]}
+                readOnlyRootFilesystem: true
+              volumeMounts:
+                - {name: docker-config, mountPath: /docker-config}
+            - name: sbom
+              image: docker.io/anchore/syft:v1.44.0
+              args:
+                - scan
+                - ${image}
+                - --from
+                - registry
+                - -o
+                - spdx-json=/artifacts/${safe_id}/sbom.spdx.json
+              env:
+                - {name: SYFT_REGISTRY_INSECURE_SKIP_TLS_VERIFY, value: "true"}
+                - {name: SYFT_REGISTRY_INSECURE_USE_HTTP, value: "true"}
+                - {name: DOCKER_CONFIG, value: /docker-config}
+              resources:
+                requests: {cpu: 100m, memory: 128Mi}
+                limits: {cpu: 500m, memory: 512Mi}
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities: {drop: ["ALL"]}
+                readOnlyRootFilesystem: true
+              volumeMounts:
+                - {name: artifacts, mountPath: /artifacts}
+                - {name: syft-cache, mountPath: /.cache}
+                - {name: tmp, mountPath: /tmp}
+                - {name: docker-config, mountPath: /docker-config, readOnly: true}
+          containers:
+            - name: result
+              image: docker.io/library/busybox:1.36.1
+              command: ["/bin/sh", "-c"]
+              args: ["test -s /artifacts/${safe_id}/scan.json && test -s /artifacts/${safe_id}/sbom.spdx.json && echo 'scan and SBOM passed'"]
+              resources:
+                requests: {cpu: 25m, memory: 32Mi}
+                limits: {cpu: 100m, memory: 64Mi}
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities: {drop: ["ALL"]}
+                readOnlyRootFilesystem: true
+              volumeMounts:
+                - {name: artifacts, mountPath: /artifacts}
+          volumes:
+            - name: artifacts
+              persistentVolumeClaim: {claimName: ci-artifacts}
+            - name: syft-cache
+              emptyDir: {sizeLimit: 128Mi}
+            - name: docker-config
+              emptyDir: {sizeLimit: 16Mi}
+            - name: tmp
+              emptyDir: {sizeLimit: 512Mi}
+    EOF
+    wait_for_job "$scan_job" scan
+    log info pipeline_complete "image=${image} artifacts=/artifacts/${safe_id}"

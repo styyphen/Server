@@ -39,3 +39,62 @@ spec:
       ports:
         - protocol: TCP
           port: 6443
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ci-jobs-registry-egress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: representative-ci
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - {protocol: UDP, port: 53}
+        - {protocol: TCP, port: 53}
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: platform-system
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: registry
+      ports:
+        - {protocol: TCP, port: 5000}
+    # K3s/Flannel evaluates egress after ClusterIP translation. Registry
+    # ingress still restricts the destination to the registry pod.
+    - to:
+        - ipBlock:
+            cidr: 10.42.0.0/16
+      ports:
+        - {protocol: TCP, port: 5000}
+    - to:
+        - ipBlock:
+            cidr: 10.43.0.0/16
+      ports:
+        - {protocol: TCP, port: 5000}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ci-scanner-external-database
+spec:
+  podSelector:
+    matchLabels:
+      ci.stage: scan
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - {protocol: TCP, port: 443}
