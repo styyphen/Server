@@ -140,6 +140,10 @@ Daily health, logical backup, Registry maintenance, CI artifact retention, and
 monthly rehearsal procedures are documented in the
 [Phase H2 operations runbook](../docs/phase-h2-operations-runbook.md).
 
+Junior operators should follow the
+[start, stop, and suspend guide](../docs/junior-platform-start-stop-suspend-guide.md)
+for optional services, scheduled automation, CI, and VM maintenance.
+
 ## Phase G optional add-ons
 
 All optional add-ons are installed at zero replicas. Use the lifecycle wrapper;
