@@ -9,3 +9,4 @@ Minimal React app template for the local cloud dev platform.
 ```
 
 The development server uses Vite on `http://localhost:5173`.
+The production container listens as a non-root process on port `8080`.
