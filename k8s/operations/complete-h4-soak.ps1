@@ -18,7 +18,7 @@ $cycles = @(Get-ChildItem -LiteralPath $OutputDirectory -Filter 'cycle-*.json' -
     ForEach-Object { Get-Content -Raw -LiteralPath $_.FullName | ConvertFrom-Json })
 $successful = @($cycles | Where-Object { $_.succeeded })
 $failed = @($cycles | Where-Object { -not $_.succeeded })
-$days = @($successful.day_utc | Sort-Object -Unique)
+$days = @($successful | ForEach-Object { $_.day_utc } | Sort-Object -Unique)
 
 $activeAlerts = @()
 $restartSamples = @{}
@@ -57,7 +57,7 @@ $result = [ordered]@{
     started_at = $state.started_at
     elapsed_hours = $elapsedHours
     successful_days = $days
-    failed_cycles = @($failed.day_utc)
+    failed_cycles = @($failed | ForEach-Object { $_.day_utc })
     active_alert_count = $activeAlerts.Count
     restart_growth = $restartGrowth
     checks = $checks

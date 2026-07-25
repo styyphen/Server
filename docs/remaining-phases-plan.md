@@ -78,13 +78,17 @@ the representative CI and sequential add-on suites passed; a fresh backup
 passed hashes and isolated extraction; and the final Windows and node capacity
 gates passed. See `docs/phase-h3-resilience-acceptance.md`.
 
-### H4: soak and cutover
+### H4: soak and cutover — in progress
 
 - Run a seven-day representative soak.
 - Review alerts, storage growth, restarts, and backup results.
 - Cut over stable DNS only after all gates pass.
 - Retain Compose volumes, WSL rollback state, old VM disks, and backups until
   explicit retirement approval.
+
+The formal seven-day window started at `2026-07-25T18:33:20Z`. Day one passed.
+The automated completion gate is scheduled after 168 elapsed hours; DNS
+cutover and rollback-asset retirement remain blocked.
 
 Phase H exit gate: the full platform passes reboot, disk-pressure,
 backup/restore, sequential workload, and seven-day soak tests.

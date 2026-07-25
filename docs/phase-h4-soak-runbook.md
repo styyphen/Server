@@ -25,10 +25,15 @@ State and immutable daily reports are stored under
 `D:\HyperV\operations\h4-soak`. A second invocation on the same UTC day reads
 the existing report and does not repeat the workload.
 
+`Server-Platform-H4-Completion-Gate` runs once, 168 hours and 15 minutes after
+the recorded start. It writes `completion.json` and exits non-zero if any gate
+is still unmet.
+
 ## Operator checks
 
 ```powershell
 Get-ScheduledTask -TaskName Server-Platform-H4-Daily-Soak
+Get-ScheduledTask -TaskName Server-Platform-H4-Completion-Gate
 Get-ScheduledTaskInfo -TaskName Server-Platform-H4-Daily-Soak
 Get-Content -Raw D:\HyperV\operations\h4-soak\state.json
 Get-ChildItem D:\HyperV\operations\h4-soak\cycle-*.json
@@ -50,3 +55,6 @@ released dynamic memory to Hyper-V promptly after sequential add-ons. The VM
 maximum was therefore tightened from 8 GiB to 7 GiB, above H3's observed
 6.84-GiB peak, so repeated cycles cannot consume the Windows reserve merely
 through retained balloon assignment.
+
+The formal window started at `2026-07-25T18:33:20Z`. Its earliest completion
+evaluation is `2026-08-01T20:48:20+02:00`.

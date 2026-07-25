@@ -139,7 +139,12 @@ CLI; its password is also stored outside Git.
 - Phase H3 is complete. Controlled reboot recovery took 104.4 seconds, bounded
   disk-pressure warning and eviction behavior passed, representative CI and all
   optional add-ons passed sequentially, and fresh backup/restore verification
-  passed. H4 seven-day soak is next; cutover and rollback-asset retirement
-  remain blocked.
+  passed. Cutover and rollback-asset retirement remain blocked on H4.
+- Phase H4 is in progress. The formal soak started at
+  `2026-07-25T18:33:20Z`; day one passed health, fresh-backup verification,
+  representative CI, sequential add-ons, alert review, and restart capture.
+  A 7-GiB VM maximum now prevents released Linux balloon memory from consuming
+  the Windows reserve across repeated cycles. Earliest completion evaluation
+  is 2026-08-01 at 20:48 local time.
 - The Docker Compose observability files in the repository are legacy/local
   development assets, not the active D: server runtime.

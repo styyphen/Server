@@ -156,6 +156,8 @@ try {
     }
 
     Invoke-Step -Name operational_evidence -Action {
+        $soakState = Get-Content -Raw -LiteralPath $statePath | ConvertFrom-Json
+        $soakStarted = [datetimeoffset]::Parse($soakState.started_at)
         $pods = Invoke-KubectlJson -Arguments @('get', 'pods', '-A', '-o', 'json')
         $restarts = @{}
         foreach ($pod in $pods.items) {
@@ -170,18 +172,30 @@ try {
         $events = Invoke-KubectlJson -Arguments @(
             'get', 'events', '-A', '--field-selector=type=Warning', '-o', 'json'
         )
+        $recentWarnings = @($events.items | ForEach-Object {
+            $event = $_
+            $timestamp = @(
+                $event.eventTime
+                $event.series.lastObservedTime
+                $event.lastTimestamp
+                $event.metadata.creationTimestamp
+            ) | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) } |
+                Select-Object -First 1
+            if ($null -ne $timestamp -and
+                [datetimeoffset]::Parse([string]$timestamp) -ge $soakStarted) {
+                @{
+                    namespace = $event.metadata.namespace
+                    reason = $event.reason
+                    message = $event.message
+                    observed_at = [string]$timestamp
+                }
+            }
+        })
         @{
             pod_restarts = $restarts
             active_alerts = @($alerts).Count
             alerts = @($alerts)
-            warning_events = @($events.items | ForEach-Object {
-                @{
-                    namespace = $_.metadata.namespace
-                    reason = $_.reason
-                    message = $_.message
-                    observed_at = $_.eventTime
-                }
-            })
+            warning_events = $recentWarnings
         }
     }
     $succeeded = $true
