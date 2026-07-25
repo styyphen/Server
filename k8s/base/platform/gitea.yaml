@@ -192,6 +192,15 @@ spec:
           podSelector:
             matchLabels:
               app.kubernetes.io/name: prometheus
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ci-jobs
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: gitea-runner
+      ports:
+        - port: 3000
+          protocol: TCP
     - ports:
         - port: 2222
           protocol: TCP

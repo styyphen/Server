@@ -1,0 +1,118 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gitea-runner
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gitea-runner-config
+data:
+  config.yaml: |
+    log:
+      level: info
+    runner:
+      file: /data/.runner
+      capacity: 1
+      timeout: 30m
+      shutdown_timeout: 30s
+      labels:
+        - "stage-f-orchestrator:host"
+    cache:
+      enabled: false
+    container:
+      docker_host: "-"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gitea-runner-data
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitea-runner
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gitea-runner
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: gitea-runner
+        app.kubernetes.io/component: ci-orchestrator
+    spec:
+      serviceAccountName: gitea-runner
+      automountServiceAccountToken: false
+      securityContext:
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: runner
+          image: docker.io/gitea/runner:1.0.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: CONFIG_FILE
+              value: /config/config.yaml
+            - name: GITEA_INSTANCE_URL
+              value: http://gitea.platform-system.svc.cluster.local:3000
+            - name: GITEA_RUNNER_REGISTRATION_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: gitea-runner-registration
+                  key: token
+            - name: GITEA_RUNNER_NAME
+              value: local-k3s-stage-f
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+          startupProbe:
+            exec:
+              command: ["test", "-s", "/data/.runner"]
+            failureThreshold: 60
+            periodSeconds: 2
+          readinessProbe:
+            exec:
+              command: ["test", "-s", "/data/.runner"]
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+      terminationGracePeriodSeconds: 45
+      volumes:
+        - name: config
+          configMap:
+            name: gitea-runner-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: gitea-runner-data
+        - name: tmp
+          emptyDir:
+            sizeLimit: 256Mi

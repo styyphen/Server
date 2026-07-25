@@ -4,6 +4,7 @@ resources:
   - ../single-server
   - ../../base/platform
   - ../../base/observability
+  - ../../base/ci
 labels:
   - pairs:
       app.kubernetes.io/part-of: local-development-platform

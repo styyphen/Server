@@ -141,4 +141,9 @@ Updated 2026-07-25:
   metrics/logs/traces, Grafana authentication and persistence, bounded PVCs,
   full-VM reboot recovery, capacity gates, and logical backup/restore testing
   passed. The backup is at
-  `D:\server-backups\observability\phase-e-20260725`. Phase F is next.
+  `D:\server-backups\observability\phase-e-20260725`.
+- Phase F is in progress: Gitea Runner `1.0.0` is deployed with capacity one,
+  no Docker socket, a bounded PVC, restricted networking, and the dedicated
+  `stage-f-orchestrator` label. Native Kubernetes Job execution, socketless
+  image builds, bounded artifacts, and representative pipeline acceptance
+  remain.

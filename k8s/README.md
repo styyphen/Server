@@ -70,9 +70,34 @@ kubectl apply -k ./k8s/overlays/current
 ```
 
 The current overlay intentionally does not contain Secret values. Create
-`platform-tls`, `gitea-secrets`, and `registry-auth` in `platform-system`, plus
-`grafana-admin` and `grafana-tls` in `observability`, before applying it to a new
-cluster. Runtime credentials remain under `D:\HyperV\credentials`, outside Git.
+`platform-tls`, `gitea-secrets`, and `registry-auth` in `platform-system`;
+`grafana-admin` and `grafana-tls` in `observability`; and
+`gitea-runner-registration` with a `token` key in `ci-jobs` before applying it
+to a new cluster. Runtime credentials remain under `D:\HyperV\credentials`,
+outside Git.
+
+## Phase F runner bootstrap
+
+The first Phase F increment deploys one Gitea runner with capacity one. It uses
+the dedicated `stage-f-orchestrator` host label, has no Docker socket, cannot
+authenticate to the Kubernetes API, and can only reach Gitea and cluster DNS.
+Do not route general repository workflows to this label yet. It is the bounded
+control-plane runner for the native Kubernetes Job pipeline added in the next
+increment.
+
+Create an instance runner registration token in Gitea, store it outside Git,
+and create the external Secret:
+
+```powershell
+kubectl -n ci-jobs create secret generic gitea-runner-registration `
+  --from-literal=token='<registration-token>'
+kubectl apply --dry-run=server -k ./k8s/overlays/current
+kubectl apply -k ./k8s/overlays/current
+kubectl -n ci-jobs rollout status deployment/gitea-runner --timeout=120s
+```
+
+The runner registration file persists in a bounded 1-GiB PVC so pod restarts do
+not create duplicate runner registrations.
 
 ## Important limitations
 

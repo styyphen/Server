@@ -67,6 +67,7 @@ and default-deny network policies are active.
 | Promtail | `3.3.2` | None | Cluster-internal |
 | Tempo | `2.7.1` | 5 GiB | Cluster-internal |
 | OpenTelemetry Collector | `0.118.0` | None | Cluster-internal |
+| Gitea Runner | `1.0.0` | 1 GiB registration data | Cluster-internal |
 
 Gitea SSH is exposed on node port `32222`. Registry access requires bcrypt
 authentication and TLS. K3s/containerd trusts the local CA and has registry
@@ -105,6 +106,11 @@ CLI; its password is also stored outside Git.
 - Phases A–D in `docs/hyperv-k3s-server-execution-plan.md` are complete.
 - Phase E is complete. E1 through E4, full-VM reboot recovery, capacity checks,
   controlled telemetry and alert tests, and logical backup/restore testing
-  passed. Phase F (safe CI/CD) is next.
+  passed.
+- Phase F is in progress. The capacity-one Gitea runner is registered and
+  healthy in `ci-jobs`, uses no Docker socket, has a bounded 1-GiB PVC, and
+  consumes 100m CPU/128 MiB requested at idle. It is restricted to the
+  `stage-f-orchestrator` label until native Kubernetes Job execution and
+  socketless image building are implemented and accepted.
 - The Docker Compose observability files in the repository are legacy/local
   development assets, not the active D: server runtime.
