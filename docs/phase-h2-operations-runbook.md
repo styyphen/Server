@@ -11,6 +11,7 @@ credentials and reports outside Git.
 | `Server-Platform-Daily-Health` | Daily 06:00 | `D:\HyperV\operations\health` |
 | `Server-Platform-Weekly-Registry-Maintenance` | Sunday 04:00 | `D:\HyperV\operations\registry` |
 | `ci-artifact-retention` | Daily 03:30 (Kubernetes CronJob) | Kubernetes Job logs |
+| `Server-Platform-H4-Daily-Soak` | Daily 07:00, during H4 | `D:\HyperV\operations\h4-soak` |
 
 Daily backups retain at most 14 successful backup directories and no more than
 14 days. They contain Gitea, Registry, Grafana, cluster objects, SHA-256
@@ -78,3 +79,6 @@ rerunning cleanup.
 
 Do not use these rehearsals to perform final DNS cutover or retire rollback
 assets. Those actions remain blocked until Phase G and the seven-day soak pass.
+
+See `docs/phase-h4-soak-runbook.md` while the temporary H4 acceptance schedule
+is active.
