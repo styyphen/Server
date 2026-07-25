@@ -166,4 +166,7 @@ Updated 2026-07-25:
   health remained green while each service was active, the Windows reserve
   stayed above 4 GiB, and every add-on reliably returned to zero. The final
   report is `D:\HyperV\operations\addons\phase-g-20260725T125130Z.json`.
-  H3 resilience acceptance is next.
+- Phase H3 passed. Controlled reboot recovery, bounded disk-pressure eviction,
+  capacity-one representative CI, sequential optional add-ons, fresh logical
+  backup verification, and final host/guest capacity gates all passed. H4
+  seven-day soak is next.

@@ -123,8 +123,8 @@ CLI; its password is also stored outside Git.
 - Phase H started before Phase G by operator decision. H1 is complete: all four
   repository templates include Kubernetes bases and Restricted local overlays,
   and generated-repository validation enforces their deployment contract.
-  H2 automation subsequently completed; final cutover remains blocked on H3
-  resilience acceptance and the seven-day soak.
+  H2 automation subsequently completed; final cutover remains blocked on the
+  seven-day soak.
 - Phase H2 is complete. SYSTEM scheduled tasks run logical backups at 02:00,
   health checks at 06:00, and guarded Registry maintenance Sundays at 04:00.
   The `ci-artifact-retention` CronJob runs daily at 03:30. The first production
@@ -135,6 +135,11 @@ CLI; its password is also stored outside Git.
   active add-on, performs API acceptance, and guarantees cleanup. The final
   sequential run passed with at least 4.22 GiB Windows free memory and all core
   health gates green. Hyper-V dynamic-memory buffer is 5% with the existing
-  5/5/8 GiB minimum/startup/maximum bounds. H3 is next.
+  5/5/8 GiB minimum/startup/maximum bounds.
+- Phase H3 is complete. Controlled reboot recovery took 104.4 seconds, bounded
+  disk-pressure warning and eviction behavior passed, representative CI and all
+  optional add-ons passed sequentially, and fresh backup/restore verification
+  passed. H4 seven-day soak is next; cutover and rollback-asset retirement
+  remain blocked.
 - The Docker Compose observability files in the repository are legacy/local
   development assets, not the active D: server runtime.

@@ -4,11 +4,11 @@ Updated 2026-07-25 after Phase F completion.
 
 ## Current position
 
-Phases A through G and H1/H2 are complete. Phase H began before Phase G by
+Phases A through G and H1/H2/H3 are complete. Phase H began before Phase G by
 explicit operator decision; Phase G subsequently passed its isolated and
-sequential acceptance gates. H3 resilience acceptance is next. Final cutover
-and retirement of rollback assets must still wait for H3 and the seven-day
-soak.
+sequential acceptance gates. H3 resilience acceptance subsequently passed.
+Final cutover and retirement of rollback assets must still wait for the
+seven-day soak.
 
 ## Phase G: optional development services — complete
 
@@ -64,13 +64,19 @@ backups plus guarded weekly Registry maintenance. Kubernetes enforces 14-day CI
 artifact retention. Backup hashes and isolated extraction passed, and the
 monthly restore/upgrade rehearsal procedure is documented.
 
-### H3: resilience acceptance
+### H3: resilience acceptance — complete
 
 - Controlled VM reboot and workload recovery.
 - Disk-pressure warning and eviction behavior.
 - Sequential pipelines and optional add-ons.
 - Backup/restore verification.
 - Windows and guest capacity gates.
+
+Completed 2026-07-25. The VM recovered fully in 104.4 seconds; bounded
+DiskPressure and eviction behavior passed without filling the virtual disk;
+the representative CI and sequential add-on suites passed; a fresh backup
+passed hashes and isolated extraction; and the final Windows and node capacity
+gates passed. See `docs/phase-h3-resilience-acceptance.md`.
 
 ### H4: soak and cutover
 
@@ -93,6 +99,5 @@ backup/restore, sequential workload, and seven-day soak tests.
 
 ## Immediate execution order
 
-1. Run H3 resilience acceptance.
-2. Run the H4 seven-day representative soak.
-3. Review cutover gates and request explicit rollback-asset retirement approval.
+1. Run the H4 seven-day representative soak.
+2. Review cutover gates and request explicit rollback-asset retirement approval.
