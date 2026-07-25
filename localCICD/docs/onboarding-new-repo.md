@@ -51,6 +51,9 @@ Create a pull request before merging into `main`.
 commitlint.config.js
 Dockerfile
 docker-compose.yml
+k8s/base/kustomization.yaml
+k8s/base/workload.yaml
+k8s/base/network-policy.yaml
 README.md
 CHANGELOG.md
 docs/architecture.md
@@ -99,7 +102,14 @@ From the new repository:
 ./scripts/security-scan.ps1
 ./scripts/package.ps1
 ./scripts/run-ci-local.ps1
+kubectl kustomize ./k8s/base
 ```
+
+The Kubernetes base must render without credentials and must include explicit
+resources, probes, a non-root security context, no service-account token unless
+required, OTLP configuration, and default-deny-aware network policy. Add
+environment-specific namespace, ingress host, image tag/digest, and Secret
+references in an overlay rather than editing the base.
 
 ## Local Image Naming
 
