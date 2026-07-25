@@ -1,6 +1,6 @@
 # Current D: Server State
 
-Verified 2026-07-24 against the running Hyper-V VM and Kubernetes API.
+Verified 2026-07-25 against the running Hyper-V VM and Kubernetes API.
 
 ## Source of truth
 
@@ -10,6 +10,8 @@ Verified 2026-07-24 against the running Hyper-V VM and Kubernetes API.
 - Runtime credentials: `D:\HyperV\credentials`
 - Cold VM backup: `D:\server-backups\hyperv\baseline-20260723`
 - Platform logical backup: `D:\server-backups\platform\phase-d-20260723`
+- Observability logical backup:
+  `D:\server-backups\observability\phase-e-20260725`
 
 Credentials, kubeconfigs, certificates, private keys, VHDX files, and backup
 archives are runtime state and must not be committed.
@@ -60,6 +62,11 @@ and default-deny network policies are active.
 | Prometheus | `3.1.0` | 10 GiB | Cluster-internal |
 | Alertmanager | `0.28.0` | 1 GiB | Cluster-internal |
 | Node exporter | `1.8.2` | None | Cluster-internal |
+| Grafana | `11.5.2` | 1 GiB | `https://grafana.dev.home.arpa` |
+| Loki | `3.3.2` | 10 GiB | Cluster-internal |
+| Promtail | `3.3.2` | None | Cluster-internal |
+| Tempo | `2.7.1` | 5 GiB | Cluster-internal |
+| OpenTelemetry Collector | `0.118.0` | None | Cluster-internal |
 
 Gitea SSH is exposed on node port `32222`. Registry access requires bcrypt
 authentication and TLS. K3s/containerd trusts the local CA and has registry
@@ -72,6 +79,11 @@ that overlay to a new cluster, create these external Secrets in
 - `platform-tls`
 - `gitea-secrets`
 - `registry-auth`
+
+Also create these external Secrets in `observability`:
+
+- `grafana-admin`
+- `grafana-tls`
 
 Use `k8s/scripts/generate-platform-bootstrap.sh` to generate new material
 outside Git. Create the Gitea administrator after first startup with the Gitea
@@ -91,8 +103,8 @@ CLI; its password is also stored outside Git.
 ## Phase status
 
 - Phases A–D in `docs/hyperv-k3s-server-execution-plan.md` are complete.
-- Phase E is in progress. E1 (Prometheus, Alertmanager, and node-exporter) is
-  deployed and verified; E2 (Grafana) is next. Resume from
-  `docs/phase-e-continuation-plan.md`.
+- Phase E is complete. E1 through E4, full-VM reboot recovery, capacity checks,
+  controlled telemetry and alert tests, and logical backup/restore testing
+  passed. Phase F (safe CI/CD) is next.
 - The Docker Compose observability files in the repository are legacy/local
   development assets, not the active D: server runtime.

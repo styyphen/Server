@@ -9,7 +9,7 @@ server. Read it together with:
 
 ## Current checkpoint
 
-Captured 2026-07-24 in the Africa/Johannesburg timezone.
+Updated 2026-07-25 in the Africa/Johannesburg timezone.
 
 - Git branch: `master`
 - Last completed server-state commit: `7de4b57`
@@ -20,10 +20,11 @@ Captured 2026-07-24 in the Africa/Johannesburg timezone.
 - Node: Ready
 - Gitea and Registry: Running and persistent
 - Phase D backups: present and previously restore-tested
-- Phase E E1 workloads: deployed and verified
+- Phase E E1 through E4 workloads: deployed and verified
 
-The live server is healthy. The pre-deployment capacity gate passed after the
-controlled Windows restart, and E1 is complete. Resume with E2 (Grafana).
+The live server is healthy. Prometheus, Alertmanager, node-exporter, Grafana,
+Loki, Promtail, Tempo, and the OpenTelemetry Collector are deployed. Resume with
+the Phase E completion gate.
 
 ## Resolved pre-deployment blocker
 
@@ -153,7 +154,7 @@ Status: completed and verified on 2026-07-24.
 
 ### E2: Grafana
 
-Status: next increment; not deployed.
+Status: completed and verified on 2026-07-25.
 
 1. Generate the administrator credential outside Git.
 2. Provision Prometheus, Loki, and Tempo data sources declaratively.
@@ -163,7 +164,15 @@ Status: next increment; not deployed.
 
 Rollback: scale Grafana to zero and preserve its PVC.
 
+- Anonymous API access was rejected and administrator authentication succeeded.
+- Prometheus, Loki, and Tempo data sources are provisioned declaratively.
+- A Prometheus `vector(1)` query succeeded through Grafana.
+- A controlled dashboard remained present after a Grafana rollout restart.
+- The Grafana PVC is Bound and the HTTPS ingress is healthy.
+
 ### E3: Loki and log collection
+
+Status: completed and verified on 2026-07-25.
 
 1. Deploy single-binary Loki with filesystem storage and short retention.
 2. Deploy a resource-bounded collector for Kubernetes pod logs.
@@ -173,7 +182,15 @@ Rollback: scale Grafana to zero and preserve its PVC.
 
 Rollback: stop the collector first, then scale Loki to zero; preserve its PVC.
 
+- Loki and Promtail are Ready.
+- Promtail collects the K3s host pod logs without Kubernetes API privileges.
+- Loki returned log streams for K3s, Gitea, Registry, and a controlled test pod.
+- Loki queries succeeded both through its API and through Grafana.
+- The Loki PVC is Bound with seven-day retention configured.
+
 ### E4: Tempo and OpenTelemetry Collector
+
+Status: completed and verified on 2026-07-25.
 
 1. Deploy single-binary Tempo with local storage.
 2. Deploy the OpenTelemetry Collector on ports 4317 and 4318.
@@ -184,7 +201,21 @@ Rollback: stop the collector first, then scale Loki to zero; preserve its PVC.
 
 Rollback: stop the Collector first, then scale Tempo to zero; preserve its PVC.
 
+- Tempo and the OpenTelemetry Collector are Ready.
+- Controlled OTLP metric, log, and trace payloads reached Prometheus, Loki, and
+  Tempo respectively.
+- Grafana returned the controlled Loki streams and Tempo trace through its
+  provisioned data-source proxies.
+- The collector Prometheus target is healthy and the Tempo PVC is Bound.
+- Total observability memory requests are 1,312 MiB and limits are 2,432 MiB.
+- Post-E4 Windows available-memory samples were 5.728, 5.603, and 5.601 GiB.
+- Guest memory was 5,509 MiB total, 2,340 MiB used, and 3,168 MiB available;
+  the guest root disk was 5% used.
+- Every active pod was Ready after the rollout.
+
 ## Phase E completion gate
+
+Status: passed on 2026-07-25.
 
 Before marking Phase E complete:
 
@@ -201,6 +232,30 @@ Before marking Phase E complete:
 - Update `docs/current-server-state.md` and the main execution plan.
 - Run manifest, syntax, whitespace, and secret scans.
 - Commit the completed Phase E state to `master`.
+
+Completion evidence:
+
+- A controlled full-VM reboot returned the node and every active workload to
+  Ready without manual recovery.
+- All 10 Prometheus targets were healthy and all four alert rules were loaded.
+- A short-lived controlled completion alert was visible in Alertmanager.
+- Grafana authentication, its persisted dashboard, and its three provisioned
+  data sources remained healthy after restart.
+- Controlled metrics, logs, and traces were queried from their backends and
+  through Grafana.
+- All five observability PVCs were Bound; the highest observed use was 4.32%.
+- Post-reboot Windows available-memory samples were 5.794, 5.792, and
+  5.817 GiB. Guest memory was 5,151 MiB total, 2,078 MiB used, and 3,073 MiB
+  available; the root disk was 5% used.
+- The logical backup is at
+  `D:\server-backups\observability\phase-e-20260725`. It contains Kubernetes
+  resource definitions, a Secret-name/type inventory without Secret data,
+  Prometheus rules and targets, Grafana dashboards, and SHA-256 checksums.
+- An isolated Grafana dashboard restore was created, read back, and removed.
+- Manifest rendering, server dry-run, whitespace, pinned-image, and added-secret
+  scans passed.
+
+Phase E is complete. Phase F (safe CI/CD) is the next implementation phase.
 
 ## Safety reminders
 

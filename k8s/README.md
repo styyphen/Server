@@ -70,9 +70,9 @@ kubectl apply -k ./k8s/overlays/current
 ```
 
 The current overlay intentionally does not contain Secret values. Create
-`platform-tls`, `gitea-secrets`, and `registry-auth` in `platform-system`
-before applying it to a new cluster. Runtime credentials remain under
-`D:\HyperV\credentials`, outside Git.
+`platform-tls`, `gitea-secrets`, and `registry-auth` in `platform-system`, plus
+`grafana-admin` and `grafana-tls` in `observability`, before applying it to a new
+cluster. Runtime credentials remain under `D:\HyperV\credentials`, outside Git.
 
 ## Important limitations
 

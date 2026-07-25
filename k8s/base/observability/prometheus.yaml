@@ -92,6 +92,9 @@ data:
       - job_name: promtail
         static_configs:
           - targets: [promtail.kube-system.svc.cluster.local:9080]
+      - job_name: otel-collector
+        static_configs:
+          - targets: [otel-collector.observability.svc.cluster.local:8889]
   alerts.yml: |
     groups:
       - name: local-server

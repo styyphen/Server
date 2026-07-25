@@ -7,4 +7,6 @@ resources:
   - grafana.yaml
   - loki.yaml
   - promtail.yaml
+  - tempo.yaml
+  - otel-collector.yaml
   - network-policies.yaml
