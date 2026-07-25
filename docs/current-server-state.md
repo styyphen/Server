@@ -120,9 +120,10 @@ CLI; its password is also stored outside Git.
   Post-run Windows free memory was 4.67 GiB; VM assigned/demand memory was
   6.07/4.85 GiB; K3s memory was 69%; and Gitea plus all observability pods
   remained Ready.
-- Phase H has started before Phase G by operator decision. The first reversible
-  H1 increment adds Kubernetes bases to the Node and .NET API repository
-  templates and extends onboarding guidance. Final H acceptance and cutover
-  remain blocked on Phase G and the seven-day soak.
+- Phase H started before Phase G by operator decision. H1 is complete: all four
+  repository templates include Kubernetes bases and Restricted local overlays,
+  and generated-repository validation enforces their deployment contract.
+  Reversible H2 automation may proceed; final H acceptance and cutover remain
+  blocked on Phase G and the seven-day soak.
 - The Docker Compose observability files in the repository are legacy/local
   development assets, not the active D: server runtime.

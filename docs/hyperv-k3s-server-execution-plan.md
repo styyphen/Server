@@ -149,9 +149,10 @@ Updated 2026-07-25:
   without any Docker/containerd/Podman socket, Trivy scanned it, Syft generated
   an SPDX JSON SBOM, and all required outputs persisted on a bounded artifact
   PVC. Gitea Actions run `2` completed successfully without degrading Gitea,
-  observability, Windows memory reserve, or K3s capacity. Phase G is next.
-- Phase H1 began before Phase G by explicit operator decision. Node and .NET
-  API templates now have render-validated Kubernetes bases with resources,
-  probes, restricted security contexts, OTLP settings, and NetworkPolicies.
-  Only reversible H work may proceed until Phase G passes; cutover, soak
-  acceptance, and rollback retirement remain deferred.
+  observability, Windows memory reserve, or K3s capacity.
+- Phase H1 completed before Phase G by explicit operator decision. All four
+  repository templates now have render-validated Kubernetes bases and local
+  overlays with resources, probes, Restricted Pod Security, OTLP settings,
+  and NetworkPolicies. Generated-repository contract validation covers every
+  template. Only reversible H2 work may proceed until Phase G passes; cutover,
+  soak acceptance, and rollback retirement remain deferred.

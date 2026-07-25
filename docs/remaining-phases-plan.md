@@ -36,13 +36,17 @@ degrading Gitea, CI, Registry, or observability.
 
 ## Phase H: operations and cutover
 
-### H1: repository templates and onboarding
+### H1: repository templates and onboarding — complete
 
 - Add Kubernetes bases/overlays to every repository template.
 - Preserve local Docker Compose workflows.
 - Add explicit resources, probes, Restricted Pod Security, default-deny-aware
   NetworkPolicies, and OTLP configuration.
 - Extend onboarding validation and documentation.
+
+Completed 2026-07-25. All four templates have a Kubernetes base and local
+overlay, retain Docker Compose workflows, and pass generated-repository
+contract validation.
 
 ### H2: operational automation
 
@@ -81,7 +85,6 @@ backup/restore, sequential workload, and seven-day soak tests.
 
 ## Immediate execution order
 
-1. H1 Kubernetes repository templates and onboarding validation.
-2. H2 read-only daily health automation.
-3. H2 backup and cleanup automation.
-4. Pause H final acceptance, complete Phase G, then resume H3 and H4.
+1. H2 read-only daily health automation.
+2. H2 backup and cleanup automation.
+3. Pause H final acceptance, complete Phase G, then resume H3 and H4.
