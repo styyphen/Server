@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: azurite
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: azurite
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - podSelector: {}
+      ports:
+        - {protocol: TCP, port: 10000}
+        - {protocol: TCP, port: 10001}
+        - {protocol: TCP, port: 10002}
+  egress: []

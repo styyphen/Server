@@ -116,9 +116,13 @@ try {
 
     $deployments = Invoke-KubectlJson -Arguments @('get', 'deployments', '-A', '-o', 'json')
     $badDeployments = @($deployments.items | Where-Object {
-        [int]$_.status.availableReplicas -lt [int]$_.spec.replicas
+        $availableProperty = $_.status.PSObject.Properties['availableReplicas']
+        $available = if ($null -eq $availableProperty) { 0 } else { [int]$availableProperty.Value }
+        $available -lt [int]$_.spec.replicas
     } | ForEach-Object {
-        "$($_.metadata.namespace)/$($_.metadata.name):$([int]$_.status.availableReplicas)/$([int]$_.spec.replicas)"
+        $availableProperty = $_.status.PSObject.Properties['availableReplicas']
+        $available = if ($null -eq $availableProperty) { 0 } else { [int]$availableProperty.Value }
+        "$($_.metadata.namespace)/$($_.metadata.name):$available/$([int]$_.spec.replicas)"
     })
     Add-HealthCheck -Name kubernetes_deployments -Passed ($badDeployments.Count -eq 0) `
         -Message "Kubernetes reports $($badDeployments.Count) unavailable deployment(s)." `
@@ -126,9 +130,13 @@ try {
 
     $statefulSets = Invoke-KubectlJson -Arguments @('get', 'statefulsets', '-A', '-o', 'json')
     $badStatefulSets = @($statefulSets.items | Where-Object {
-        [int]$_.status.readyReplicas -lt [int]$_.spec.replicas
+        $readyProperty = $_.status.PSObject.Properties['readyReplicas']
+        $ready = if ($null -eq $readyProperty) { 0 } else { [int]$readyProperty.Value }
+        $ready -lt [int]$_.spec.replicas
     } | ForEach-Object {
-        "$($_.metadata.namespace)/$($_.metadata.name):$([int]$_.status.readyReplicas)/$([int]$_.spec.replicas)"
+        $readyProperty = $_.status.PSObject.Properties['readyReplicas']
+        $ready = if ($null -eq $readyProperty) { 0 } else { [int]$readyProperty.Value }
+        "$($_.metadata.namespace)/$($_.metadata.name):$ready/$([int]$_.spec.replicas)"
     })
     Add-HealthCheck -Name kubernetes_statefulsets -Passed ($badStatefulSets.Count -eq 0) `
         -Message "Kubernetes reports $($badStatefulSets.Count) unavailable StatefulSet(s)." `

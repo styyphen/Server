@@ -5,6 +5,7 @@ resources:
   - ../../base/platform
   - ../../base/observability
   - ../../base/ci
+  - ../../addons
 labels:
   - pairs:
       app.kubernetes.io/part-of: local-development-platform
