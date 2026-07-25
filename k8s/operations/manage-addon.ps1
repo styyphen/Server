@@ -170,6 +170,17 @@ function Start-Addon {
             if ($fatalReasons.Count -gt 0) {
                 throw "Add-on '$Name' startup entered $($fatalReasons -join ', ')."
             }
+            $unschedulable = @($pods.items | ForEach-Object {
+                $conditionsProperty = $_.status.PSObject.Properties['conditions']
+                if ($null -ne $conditionsProperty) {
+                    $conditionsProperty.Value | Where-Object {
+                        $_.type -eq 'PodScheduled' -and $_.status -eq 'False' -and $_.reason -eq 'Unschedulable'
+                    }
+                }
+            })
+            if ($unschedulable.Count -gt 0) {
+                throw "Add-on '$Name' is unschedulable: $($unschedulable[0].message)"
+            }
         } while ((Get-Date) -lt $deadline)
         if ($ready -lt 1) {
             throw "Add-on '$Name' did not become Ready within $TimeoutSeconds seconds."

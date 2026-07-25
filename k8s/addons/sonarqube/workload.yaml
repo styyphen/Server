@@ -1,0 +1,213 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sonarqube-postgresql
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sonarqube
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sonarqube-postgresql-data
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sonarqube-data
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 3Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sonarqube-extensions
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sonarqube-logs
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sonarqube-postgresql
+spec:
+  selector:
+    app.kubernetes.io/name: sonarqube-postgresql
+  ports:
+    - {name: postgresql, port: 5432, targetPort: postgresql}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sonarqube
+spec:
+  selector:
+    app.kubernetes.io/name: sonarqube
+  ports:
+    - {name: http, port: 9000, targetPort: http}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: sonarqube-postgresql
+  labels:
+    platform.dev.home.arpa/addon: sonarqube
+spec:
+  serviceName: sonarqube-postgresql
+  replicas: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sonarqube-postgresql
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: sonarqube-postgresql
+        platform.dev.home.arpa/addon: sonarqube
+    spec:
+      serviceAccountName: sonarqube-postgresql
+      automountServiceAccountToken: false
+      securityContext:
+        fsGroup: 999
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: postgresql
+          image: docker.io/library/postgres:16.10-alpine
+          env:
+            - {name: POSTGRES_DB, value: sonarqube}
+            - {name: POSTGRES_USER, valueFrom: {secretKeyRef: {name: sonarqube-database, key: username}}}
+            - {name: POSTGRES_PASSWORD, valueFrom: {secretKeyRef: {name: sonarqube-database, key: password}}}
+            - {name: PGDATA, value: /var/lib/postgresql/data/pgdata}
+          ports:
+            - {name: postgresql, containerPort: 5432}
+          resources:
+            requests: {cpu: 100m, memory: 512Mi}
+            limits: {cpu: 500m, memory: 1Gi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+            readOnlyRootFilesystem: true
+          startupProbe:
+            exec: {command: [sh, -c, "pg_isready -U \"$POSTGRES_USER\" -d sonarqube"]}
+            failureThreshold: 60
+            periodSeconds: 2
+          readinessProbe:
+            exec: {command: [sh, -c, "pg_isready -U \"$POSTGRES_USER\" -d sonarqube"]}
+            periodSeconds: 10
+          livenessProbe:
+            exec: {command: [sh, -c, "pg_isready -U \"$POSTGRES_USER\" -d sonarqube"]}
+            periodSeconds: 30
+          volumeMounts:
+            - {name: data, mountPath: /var/lib/postgresql/data}
+            - {name: run, mountPath: /var/run/postgresql}
+            - {name: tmp, mountPath: /tmp}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: sonarqube-postgresql-data}
+        - name: run
+          emptyDir: {sizeLimit: 16Mi}
+        - name: tmp
+          emptyDir: {sizeLimit: 64Mi}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sonarqube
+  labels:
+    platform.dev.home.arpa/addon: sonarqube
+spec:
+  replicas: 0
+  strategy: {type: Recreate}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sonarqube
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: sonarqube
+        platform.dev.home.arpa/addon: sonarqube
+    spec:
+      serviceAccountName: sonarqube
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 120
+      securityContext:
+        fsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: sonarqube
+          image: docker.io/library/sonarqube:10.7-community
+          env:
+            - {name: SONAR_JDBC_URL, value: "jdbc:postgresql://sonarqube-postgresql:5432/sonarqube"}
+            - {name: SONAR_JDBC_USERNAME, valueFrom: {secretKeyRef: {name: sonarqube-database, key: username}}}
+            - {name: SONAR_JDBC_PASSWORD, valueFrom: {secretKeyRef: {name: sonarqube-database, key: password}}}
+            - {name: SONAR_WEB_JAVAOPTS, value: "-Xms256m -Xmx512m"}
+            - {name: SONAR_CE_JAVAOPTS, value: "-Xms256m -Xmx512m"}
+            - {name: SONAR_SEARCH_JAVAOPTS, value: "-Xms512m -Xmx512m"}
+          ports:
+            - {name: http, containerPort: 9000}
+          resources:
+            requests: {cpu: 400m, memory: 1Gi}
+            limits: {cpu: 1500m, memory: 3Gi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+            readOnlyRootFilesystem: true
+          startupProbe:
+            httpGet: {path: /api/system/status, port: http}
+            failureThreshold: 120
+            periodSeconds: 5
+          readinessProbe:
+            httpGet: {path: /api/system/status, port: http}
+            periodSeconds: 15
+          livenessProbe:
+            httpGet: {path: /api/system/status, port: http}
+            periodSeconds: 30
+          volumeMounts:
+            - {name: data, mountPath: /opt/sonarqube/data}
+            - {name: extensions, mountPath: /opt/sonarqube/extensions}
+            - {name: logs, mountPath: /opt/sonarqube/logs}
+            - {name: temp, mountPath: /opt/sonarqube/temp}
+            - {name: tmp, mountPath: /tmp}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: sonarqube-data}
+        - name: extensions
+          persistentVolumeClaim: {claimName: sonarqube-extensions}
+        - name: logs
+          persistentVolumeClaim: {claimName: sonarqube-logs}
+        - name: temp
+          emptyDir: {sizeLimit: 1Gi}
+        - name: tmp
+          emptyDir: {sizeLimit: 128Mi}

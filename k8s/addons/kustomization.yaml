@@ -6,6 +6,7 @@ resources:
   - azurite
   - fake-gcs
   - localstack
+  - sonarqube
 labels:
   - pairs:
       app.kubernetes.io/part-of: optional-development-services
