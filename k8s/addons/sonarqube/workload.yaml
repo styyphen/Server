@@ -82,7 +82,7 @@ metadata:
     platform.dev.home.arpa/addon: sonarqube
 spec:
   serviceName: sonarqube-postgresql
-  replicas: 0
+  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: sonarqube-postgresql
@@ -146,7 +146,7 @@ metadata:
   labels:
     platform.dev.home.arpa/addon: sonarqube
 spec:
-  replicas: 0
+  replicas: 1
   strategy: {type: Recreate}
   selector:
     matchLabels:

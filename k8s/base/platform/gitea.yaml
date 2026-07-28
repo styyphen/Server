@@ -198,6 +198,12 @@ spec:
           podSelector:
             matchLabels:
               app.kubernetes.io/name: gitea-runner
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ci-jobs
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: junior-fullstack-delivery
       ports:
         - port: 3000
           protocol: TCP

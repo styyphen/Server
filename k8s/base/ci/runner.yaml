@@ -58,6 +58,24 @@ spec:
         fsGroup: 1000
         seccompProfile:
           type: RuntimeDefault
+      initContainers:
+        - name: prepare-kubeconfig
+          image: docker.io/library/busybox:1.36.1
+          command: [sh, -c]
+          args:
+            - >-
+              set -eu; mkdir -p /work/runner-home/.kube;
+              printf 'apiVersion: v1\nkind: Config\nclusters:\n- name: local\n  cluster:\n    server: https://10.43.0.1:443\n    certificate-authority: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt\nusers:\n- name: runner\n  user:\n    tokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token\ncontexts:\n- name: local\n  context:\n    cluster: local\n    user: runner\n    namespace: ci-jobs\ncurrent-context: local\n' > /work/runner-home/.kube/config;
+              chmod 600 /work/runner-home/.kube/config
+          resources: {requests: {cpu: 5m, memory: 8Mi}, limits: {cpu: 25m, memory: 32Mi}}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: ["ALL"]}
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+          volumeMounts:
+            - {name: tmp, mountPath: /work}
       containers:
         - name: runner
           image: docker.io/gitea/runner:1.0.0
@@ -80,6 +98,8 @@ spec:
               value: /tmp/runner-home
             - name: XDG_CACHE_HOME
               value: /tmp/runner-cache
+            - name: KUBECONFIG
+              value: /tmp/runner-home/.kube/config
           resources:
             requests:
               cpu: 100m

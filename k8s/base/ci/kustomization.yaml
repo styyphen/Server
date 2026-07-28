@@ -7,3 +7,5 @@ resources:
   - artifacts.yaml
   - network-policies.yaml
   - retention.yaml
+patches:
+  - path: fullstack-launcher-patch.yaml

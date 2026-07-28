@@ -28,6 +28,12 @@ spec:
   ingress:
     - from:
         - podSelector: {}
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ci-jobs
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: junior-fullstack-delivery
       ports:
         - {protocol: TCP, port: 9000}
   egress:

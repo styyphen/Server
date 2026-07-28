@@ -133,6 +133,25 @@ kubectl -n ci-jobs rollout status deployment/gitea-runner --timeout=120s
 The runner registration file persists in a bounded 1-GiB PVC so pod restarts do
 not create duplicate runner registrations.
 
+## Local full-stack delivery verification
+
+The `developer-admin/junior-fullstack-demo` Gitea repository exercises the
+complete local path: Gitea Actions starts a restricted Kubernetes Job, checks
+and tests the frontend/backend, produces real Node V8 coverage, enforces the
+SonarQube quality gate, creates a non-root socketless OCI image with Crane,
+publishes the SHA and `latest` tags to the local Registry, and rolls out the
+`demo-apps/junior-fullstack-demo` Deployment.
+
+External Secrets required by this flow are `gitea-ci-checkout`, `sonarqube-ci`,
+`ci-registry-auth`, and the derived `ci-registry-dockerconfig` in `ci-jobs`, plus
+`registry-pull` in `demo-apps`. No credential values are committed.
+
+Use `kube-manage` and select **Monitoring sites → Full-stack demo**. For a
+browser on an SSH client, follow the displayed tunnel command and open
+`http://localhost:8080`. Verify `/api/health`, `/api/greeting?name=Ada`, and
+`/metrics`. The ingress hostname on the server LAN is
+`http://demo.dev.home.arpa`.
+
 Validate native Job execution directly:
 
 ```powershell

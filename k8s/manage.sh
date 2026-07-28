@@ -94,6 +94,7 @@ monitoring_sites() {
   site="$("$gum_bin" choose --header "Select monitoring site" \
     "Gitea|platform-system|service/gitea|3000:3000|http://localhost:3000" \
     "SonarQube|cloud-emulators|service/sonarqube|9000:9000|http://localhost:9000" \
+    "Full-stack demo|demo-apps|service/junior-fullstack-demo|8080:8080|http://localhost:8080" \
     "Grafana|observability|service/grafana|3001:3000|http://localhost:3001" \
     "Prometheus|observability|service/prometheus|9090:9090|http://localhost:9090" \
     "Alertmanager|observability|service/alertmanager|9093:9093|http://localhost:9093" \
@@ -131,6 +132,7 @@ port_forward() {
   site="$("$gum_bin" choose --header "Select local verification site" \
     "Gitea|platform-system|service/gitea|3000:3000" \
     "SonarQube|cloud-emulators|service/sonarqube|9000:9000" \
+    "Full-stack demo|demo-apps|service/junior-fullstack-demo|8080:8080" \
     "Prometheus|observability|service/prometheus|9090:9090" \
     "Grafana|observability|service/grafana|3001:3000" \
     "OpenTelemetry health|observability|deployment/otel-collector|13133:13133")"

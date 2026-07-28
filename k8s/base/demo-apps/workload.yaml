@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata: {name: junior-fullstack-demo}
+automountServiceAccountToken: false
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: junior-fullstack-demo}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app.kubernetes.io/name: junior-fullstack-demo}}
+  template:
+    metadata:
+      labels: {app.kubernetes.io/name: junior-fullstack-demo}
+      annotations: {prometheus.io/scrape: "true", prometheus.io/path: /metrics, prometheus.io/port: "8080"}
+    spec:
+      serviceAccountName: junior-fullstack-demo
+      automountServiceAccountToken: false
+      securityContext: {runAsNonRoot: true, runAsUser: 1000, runAsGroup: 1000, fsGroup: 1000, seccompProfile: {type: RuntimeDefault}}
+      containers:
+        - name: app
+          image: registry.dev.home.arpa/junior-fullstack-demo:bootstrap
+          imagePullPolicy: Always
+          ports: [{name: http, containerPort: 8080}]
+          env: [{name: PORT, value: "8080"}, {name: RELEASE_VERSION, value: bootstrap}]
+          readinessProbe: {httpGet: {path: /api/health, port: http}, initialDelaySeconds: 2, periodSeconds: 5}
+          livenessProbe: {httpGet: {path: /api/health, port: http}, initialDelaySeconds: 10, periodSeconds: 10}
+          resources: {requests: {cpu: 25m, memory: 48Mi}, limits: {cpu: 250m, memory: 192Mi}}
+          securityContext: {allowPrivilegeEscalation: false, capabilities: {drop: [ALL]}, readOnlyRootFilesystem: true}
+      imagePullSecrets: [{name: registry-pull}]
+---
+apiVersion: v1
+kind: Service
+metadata: {name: junior-fullstack-demo, labels: {app.kubernetes.io/name: junior-fullstack-demo}}
+spec:
+  selector: {app.kubernetes.io/name: junior-fullstack-demo}
+  ports: [{name: http, port: 8080, targetPort: http}]
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata: {name: junior-fullstack-demo}
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: demo.dev.home.arpa
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend: {service: {name: junior-fullstack-demo, port: {name: http}}}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata: {name: fullstack-release}
+rules:
+  - apiGroups: [apps]
+    resources: [deployments]
+    resourceNames: [junior-fullstack-demo]
+    verbs: [get, patch, update]
+  - apiGroups: [apps]
+    resources: [deployments]
+    verbs: [list, watch]
+  - apiGroups: [""]
+    resources: [pods]
+    verbs: [get, list, watch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata: {name: gitea-runner-fullstack-release}
+subjects: [{kind: ServiceAccount, name: gitea-runner, namespace: ci-jobs}]
+roleRef: {apiGroup: rbac.authorization.k8s.io, kind: Role, name: fullstack-release}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: junior-fullstack-demo}
+spec:
+  podSelector: {matchLabels: {app.kubernetes.io/name: junior-fullstack-demo}}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: observability}}
+          podSelector: {matchLabels: {app.kubernetes.io/name: prometheus}}
+      ports: [{protocol: TCP, port: 8080}]
