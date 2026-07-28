@@ -19,6 +19,8 @@ output and refuses operations that require confirmation.
 
 The monitoring menu asks whether the browser is on an SSH client, prints the exact client-side `ssh -L` command when needed, and starts a loopback-only Kubernetes port-forward for:
 
+- Gitea: `http://localhost:3000`
+- SonarQube: `http://localhost:9000`
 - Grafana: `http://localhost:3001`
 - Prometheus: `http://localhost:9090`
 - Alertmanager: `http://localhost:9093`

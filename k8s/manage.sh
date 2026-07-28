@@ -90,15 +90,17 @@ monitoring_sites() {
     printf 'The monitoring-sites command requires an interactive terminal with gum.\n' >&2
     return 2
   fi
-  local site name target forwarding url local_port server_address ssh_user ssh_command
+  local site name namespace target forwarding url local_port server_address ssh_user ssh_command
   site="$("$gum_bin" choose --header "Select monitoring site" \
-    "Grafana|service/grafana|3001:3000|http://localhost:3001" \
-    "Prometheus|service/prometheus|9090:9090|http://localhost:9090" \
-    "Alertmanager|service/alertmanager|9093:9093|http://localhost:9093" \
-    "Loki|service/loki|3100:3100|http://localhost:3100" \
-    "Tempo|service/tempo|3200:3200|http://localhost:3200")"
+    "Gitea|platform-system|service/gitea|3000:3000|http://localhost:3000" \
+    "SonarQube|cloud-emulators|service/sonarqube|9000:9000|http://localhost:9000" \
+    "Grafana|observability|service/grafana|3001:3000|http://localhost:3001" \
+    "Prometheus|observability|service/prometheus|9090:9090|http://localhost:9090" \
+    "Alertmanager|observability|service/alertmanager|9093:9093|http://localhost:9093" \
+    "Loki|observability|service/loki|3100:3100|http://localhost:3100" \
+    "Tempo|observability|service/tempo|3200:3200|http://localhost:3200")"
   [[ -n "$site" ]] || return 0
-  IFS='|' read -r name target forwarding url <<<"$site"
+  IFS='|' read -r name namespace target forwarding url <<<"$site"
   local_port="${forwarding%%:*}"
   heading "$name monitoring"
 
@@ -117,7 +119,7 @@ monitoring_sites() {
   fi
 
   printf 'Keep this command running; press Ctrl+C to stop the port-forward.\n'
-  exec kubectl -n observability port-forward "$target" "$forwarding" --address 127.0.0.1
+  exec kubectl -n "$namespace" port-forward "$target" "$forwarding" --address 127.0.0.1
 }
 
 port_forward() {
