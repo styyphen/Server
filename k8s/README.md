@@ -1,5 +1,22 @@
 # Single-server Kubernetes platform
 
+## Interactive management
+
+`kube-manage` is the default interactive interface for day-to-day Kubernetes
+management. It uses Gum for menus, styled status output, log selection, explicit
+apply confirmation, and local verification-site forwarding:
+
+```bash
+kube-manage
+kube-manage status
+kube-manage validate
+```
+
+Raw `kubectl` remains available for automation and advanced operations. When no
+interactive terminal is attached, `kube-manage` falls back to plain status
+output and refuses operations that require confirmation.
+
+
 This directory implements the standalone K3s server described by the
 [single-server plan](../docs/local-kubernetes-single-server-plan.md).
 
