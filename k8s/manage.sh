@@ -85,6 +85,41 @@ apply_overlay() {
   kubectl apply -k "$overlay"
 }
 
+monitoring_sites() {
+  if ! have_gum; then
+    printf 'The monitoring-sites command requires an interactive terminal with gum.\n' >&2
+    return 2
+  fi
+  local site name target forwarding url local_port server_address ssh_user ssh_command
+  site="$("$gum_bin" choose --header "Select monitoring site" \
+    "Grafana|service/grafana|3001:3000|http://localhost:3001" \
+    "Prometheus|service/prometheus|9090:9090|http://localhost:9090" \
+    "Alertmanager|service/alertmanager|9093:9093|http://localhost:9093" \
+    "Loki|service/loki|3100:3100|http://localhost:3100" \
+    "Tempo|service/tempo|3200:3200|http://localhost:3200")"
+  [[ -n "$site" ]] || return 0
+  IFS='|' read -r name target forwarding url <<<"$site"
+  local_port="${forwarding%%:*}"
+  heading "$name monitoring"
+
+  if "$gum_bin" confirm "Is your browser on another computer connected over SSH?"; then
+    if [[ -n "${SSH_CONNECTION:-}" ]]; then
+      read -r _ _ server_address _ <<<"$SSH_CONNECTION"
+    else
+      server_address="$(hostname -I | awk '{print $1}')"
+    fi
+    ssh_user="${USER:-developer}"
+    ssh_command="ssh -N -L ${local_port}:127.0.0.1:${local_port} ${ssh_user}@${server_address}"
+    "$gum_bin" style --bold --foreground 214 "Run this in a second terminal on your browser computer:"
+    printf '%s\n\nThen open %s.\n' "$ssh_command" "$url"
+  else
+    printf 'This site will be available only to a browser running on this server at %s.\n' "$url"
+  fi
+
+  printf 'Keep this command running; press Ctrl+C to stop the port-forward.\n'
+  exec kubectl -n observability port-forward "$target" "$forwarding" --address 127.0.0.1
+}
+
 port_forward() {
   if ! have_gum; then
     printf 'The port-forward command requires an interactive terminal with gum.\n' >&2
@@ -114,6 +149,7 @@ run_command() {
     logs) show_logs ;;
     validate) validate_overlay ;;
     apply) apply_overlay ;;
+    monitoring) monitoring_sites ;;
     port-forward) port_forward ;;
     menu)
       if ! have_gum; then
@@ -123,7 +159,7 @@ run_command() {
       local choice
       choice="$("$gum_bin" choose --header "Kubernetes management" \
         "Status" "Pods" "Workloads" "Services and ingress" \
-        "Warning events" "Pod logs" "Validate desired state" \
+        "Warning events" "Pod logs" "Monitoring sites" "Validate desired state" \
         "Apply desired state" "Port-forward verification site")"
       case "$choice" in
         Status) show_status ;;
@@ -132,13 +168,14 @@ run_command() {
         "Services and ingress") show_services ;;
         "Warning events") show_events ;;
         "Pod logs") show_logs ;;
+        "Monitoring sites") monitoring_sites ;;
         "Validate desired state") validate_overlay ;;
         "Apply desired state") apply_overlay ;;
         "Port-forward verification site") port_forward ;;
       esac
       ;;
     *)
-      printf 'Usage: kube-manage [status|pods|workloads|services|events|logs|validate|apply|port-forward]\n' >&2
+      printf 'Usage: kube-manage [status|pods|workloads|services|events|logs|monitoring|validate|apply|port-forward]\n' >&2
       return 2
       ;;
   esac

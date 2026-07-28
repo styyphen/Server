@@ -9,12 +9,21 @@ apply confirmation, and local verification-site forwarding:
 ```bash
 kube-manage
 kube-manage status
+kube-manage monitoring
 kube-manage validate
 ```
 
 Raw `kubectl` remains available for automation and advanced operations. When no
 interactive terminal is attached, `kube-manage` falls back to plain status
 output and refuses operations that require confirmation.
+
+The monitoring menu asks whether the browser is on an SSH client, prints the exact client-side `ssh -L` command when needed, and starts a loopback-only Kubernetes port-forward for:
+
+- Grafana: `http://localhost:3001`
+- Prometheus: `http://localhost:9090`
+- Alertmanager: `http://localhost:9093`
+- Loki: `http://localhost:3100`
+- Tempo: `http://localhost:3200`
 
 
 This directory implements the standalone K3s server described by the
