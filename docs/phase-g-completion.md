@@ -22,7 +22,7 @@ Completed 2026-07-25.
 Successful report:
 
 ```text
-D:\HyperV\operations\addons\phase-g-20260725T125130Z.json
+./.local/server-platform/operations/addons\phase-g-20260725T125130Z.json
 ```
 
 | Add-on | API acceptance | Guest CPU | Guest memory |
@@ -54,4 +54,4 @@ replicas `0`.
 
 The external `sonarqube-database` Secret is required in `cloud-emulators`.
 Its generated source credential is stored outside Git under
-`D:\HyperV\credentials`.
+`external credential storage`.

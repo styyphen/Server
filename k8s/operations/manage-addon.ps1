@@ -8,8 +8,8 @@ param(
     [ValidateSet('start', 'stop', 'status', 'test', 'accept')]
     [string]$Action,
 
-    [string]$KubectlPath = 'D:\HyperV\tools\kubectl-v1.36.1.exe',
-    [string]$KubeconfigPath = 'D:\HyperV\credentials\k3s-admin.yaml',
+    [string]$KubectlPath = 'kubectl',
+    [string]$KubeconfigPath = '/etc/rancher/k3s/k3s.yaml',
     [int]$TimeoutSeconds = 600
 )
 

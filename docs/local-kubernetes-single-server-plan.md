@@ -41,10 +41,6 @@ Use the K3s defaults selectively:
   documented host port or TLS ingress;
 - use one internal DNS suffix, such as `*.dev.home.arpa`.
 
-If the server must remain Windows, run one fixed-size Ubuntu VM and install K3s in
-that VM. Do not run K3s inside Docker Desktop for an always-on server. Reserve at
-least 2 CPU cores and 4 GiB RAM for Windows; include the VM overhead in the capacity
-gate.
 
 ## 3. Capacity gate
 

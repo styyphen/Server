@@ -1,24 +1,10 @@
 # Single-server Kubernetes platform
 
-This directory implements the Hyper-V/K3s server described by the
-[single-server plan](../docs/local-kubernetes-single-server-plan.md). The exact
-deployed state is recorded in
-[current-server-state.md](../docs/current-server-state.md).
+This directory implements the standalone K3s server described by the
+[single-server plan](../docs/local-kubernetes-single-server-plan.md).
 
-## Phase 0: measure and back up
 
-On the current Windows Docker host:
-
-```powershell
-./k8s/scripts/measure-capacity.ps1 -SampleSeconds 30
-./k8s/scripts/backup-compose.ps1 -OutputDirectory E:\server-backups -PullHelperImage
-```
-
-The capacity report and local backup folders are ignored by Git. Place backups on
-a different physical disk. The backup script does not stop services; schedule a
-brief write freeze and take a final backup before migrating stateful services.
-
-## Phase 1: install K3s
+## Install K3s
 
 Use a supported Ubuntu Server LTS host with a static address. Review
 `config/k3s-config.yaml`, especially the reservations against measured capacity.
@@ -60,7 +46,7 @@ include explicit network policies; DNS is the only egress allowed initially.
 
 ## Current deployed overlay
 
-`overlays/single-server` remains the safe K3s baseline. The running D: server
+`overlays/single-server` remains the safe K3s baseline. The standalone server
 also has the platform workloads represented by `overlays/current`:
 
 ```powershell
@@ -74,7 +60,7 @@ The current overlay intentionally does not contain Secret values. Create
 `grafana-admin` and `grafana-tls` in `observability`; and
 `gitea-runner-registration` with a `token` key and `ci-registry-auth` with
 `username` and `password` keys in `ci-jobs` before applying it to a new
-cluster. Runtime credentials remain under `D:\HyperV\credentials`, outside Git.
+cluster. Runtime credentials remain under `external credential storage`, outside Git.
 
 ## Phase F runner bootstrap
 
@@ -134,17 +120,8 @@ kubectl -n ci-jobs exec deployment/gitea-runner -- `
   /opt/ci/run-representative-pipeline.sh
 ```
 
-## Phase H2 operations
 
-Daily health, logical backup, Registry maintenance, CI artifact retention, and
-monthly rehearsal procedures are documented in the
-[Phase H2 operations runbook](../docs/phase-h2-operations-runbook.md).
-
-Junior operators should follow the
-[start, stop, and suspend guide](../docs/junior-platform-start-stop-suspend-guide.md)
-for optional services, scheduled automation, CI, and VM maintenance.
-
-## Phase G optional add-ons
+## Optional add-ons
 
 All optional add-ons are installed at zero replicas. Use the lifecycle wrapper;
 do not scale workloads directly:

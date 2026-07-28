@@ -1,8 +1,8 @@
 [CmdletBinding()]
 param(
-    [string]$KubectlPath = 'D:\HyperV\tools\kubectl-v1.36.1.exe',
-    [string]$KubeconfigPath = 'D:\HyperV\credentials\k3s-admin.yaml',
-    [string]$BackupRoot = 'D:\server-backups\platform',
+    [string]$KubectlPath = 'kubectl',
+    [string]$KubeconfigPath = '/etc/rancher/k3s/k3s.yaml',
+    [string]$BackupRoot = './.local/server-platform/backups',
     [int]$RetentionDays = 14,
     [int]$MaximumBackups = 14
 )
@@ -40,6 +40,28 @@ function Invoke-Kubectl {
     $output
 }
 
+function Get-ReadyPodName {
+    param(
+        [Parameter(Mandatory)][string]$Namespace,
+        [Parameter(Mandatory)][string]$Selector
+    )
+
+    $json = (Invoke-Kubectl -Arguments @(
+        '-n', $Namespace, 'get', 'pod', '-l', $Selector, '-o', 'json'
+    )) -join "`n"
+    $pods = $json | ConvertFrom-Json
+    $readyPod = @($pods.items | Where-Object {
+        $_.status.phase -eq 'Running' -and
+        @($_.status.containerStatuses).Count -gt 0 -and
+        @($_.status.containerStatuses | Where-Object { -not $_.ready }).Count -eq 0
+    } | Sort-Object { $_.metadata.creationTimestamp } -Descending | Select-Object -First 1)
+
+    if ($readyPod.Count -ne 1) {
+        throw "No Running and Ready pod matched '$Selector' in namespace '$Namespace'."
+    }
+    $readyPod[0].metadata.name
+}
+
 function Complete-Step {
     param([string]$Name, [string]$Artifact)
     $steps.Add([pscustomobject]@{ name = $Name; status = 'passed'; artifact = $Artifact })
@@ -51,7 +73,7 @@ try {
     if ($RetentionDays -lt 1 -or $MaximumBackups -lt 1) {
         throw 'RetentionDays and MaximumBackups must both be at least 1.'
     }
-    if (-not (Test-Path -LiteralPath $KubectlPath -PathType Leaf)) {
+    if (-not (Get-Command $KubectlPath -ErrorAction SilentlyContinue)) {
         throw "kubectl was not found at '$KubectlPath'."
     }
     if (-not (Test-Path -LiteralPath $KubeconfigPath -PathType Leaf)) {
@@ -63,11 +85,8 @@ try {
     Write-BackupEvent -Level info -Event platform_backup_started `
         -Message 'Daily logical platform backup started.' -Data @{ backup = $backupPath }
 
-    $giteaPod = (Invoke-Kubectl -Arguments @(
-        '-n', 'platform-system', 'get', 'pod',
-        '-l', 'app.kubernetes.io/name=gitea',
-        '-o', 'jsonpath={.items[0].metadata.name}'
-    )) -join ''
+    $giteaPod = Get-ReadyPodName -Namespace platform-system `
+        -Selector 'app.kubernetes.io/name=gitea'
     $remoteDump = "/tmp/gitea-$timestamp.tar.gz"
     Invoke-Kubectl -Arguments @(
         '-n', 'platform-system', 'exec', $giteaPod, '--',
@@ -86,11 +105,8 @@ try {
     }
     Complete-Step -Name gitea -Artifact 'gitea.tar.gz'
 
-    $registryPod = (Invoke-Kubectl -Arguments @(
-        '-n', 'platform-system', 'get', 'pod',
-        '-l', 'app.kubernetes.io/name=registry',
-        '-o', 'jsonpath={.items[0].metadata.name}'
-    )) -join ''
+    $registryPod = Get-ReadyPodName -Namespace platform-system `
+        -Selector 'app.kubernetes.io/name=registry'
     $registryStaging = Join-Path $stagingPath 'registry'
     Invoke-Kubectl -Arguments @(
         '-n', 'platform-system', 'cp',
@@ -100,11 +116,8 @@ try {
         -DestinationPath (Join-Path $backupPath 'registry.zip') -CompressionLevel Optimal
     Complete-Step -Name registry -Artifact 'registry.zip'
 
-    $grafanaPod = (Invoke-Kubectl -Arguments @(
-        '-n', 'observability', 'get', 'pod',
-        '-l', 'app.kubernetes.io/name=grafana',
-        '-o', 'jsonpath={.items[0].metadata.name}'
-    )) -join ''
+    $grafanaPod = Get-ReadyPodName -Namespace observability `
+        -Selector 'app.kubernetes.io/name=grafana'
     $grafanaStaging = Join-Path $stagingPath 'grafana'
     Invoke-Kubectl -Arguments @(
         '-n', 'observability', 'cp',

@@ -1,8 +1,8 @@
 [CmdletBinding()]
 param(
-    [string]$KubectlPath = 'D:\HyperV\tools\kubectl-v1.36.1.exe',
-    [string]$KubeconfigPath = 'D:\HyperV\credentials\k3s-admin.yaml',
-    [string]$OutputDirectory = 'D:\HyperV\operations\addons',
+    [string]$KubectlPath = 'kubectl',
+    [string]$KubeconfigPath = '/etc/rancher/k3s/k3s.yaml',
+    [string]$OutputDirectory = './.local/server-platform/operations/addons',
     [int]$TimeoutSeconds = 900
 )
 

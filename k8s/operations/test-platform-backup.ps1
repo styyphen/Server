@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [string]$BackupRoot = 'D:\server-backups\platform',
+    [string]$BackupRoot = './.local/server-platform/backups',
     [string]$BackupPath
 )
 

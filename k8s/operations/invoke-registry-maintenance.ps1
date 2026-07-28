@@ -1,9 +1,9 @@
 [CmdletBinding()]
 param(
-    [string]$KubectlPath = 'D:\HyperV\tools\kubectl-v1.36.1.exe',
-    [string]$KubeconfigPath = 'D:\HyperV\credentials\k3s-admin.yaml',
-    [string]$BackupRoot = 'D:\server-backups\platform',
-    [string]$OutputDirectory = 'D:\HyperV\operations\registry',
+    [string]$KubectlPath = 'kubectl',
+    [string]$KubeconfigPath = '/etc/rancher/k3s/k3s.yaml',
+    [string]$BackupRoot = './.local/server-platform/backups',
+    [string]$OutputDirectory = './.local/server-platform/operations/registry',
     [int]$MaximumBackupAgeHours = 26
 )
 

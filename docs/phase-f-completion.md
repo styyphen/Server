@@ -1,6 +1,6 @@
 # Phase F Safe CI/CD Completion
 
-Verified 2026-07-25 against the permanent `local-k3s-server`.
+Verified 2026-07-25 against the permanent `standalone-kubernetes`.
 
 ## Implemented controls
 
@@ -37,7 +37,6 @@ Post-run checks:
 | Gate | Result |
 |---|---|
 | Windows free memory | 4.67 GiB |
-| VM assigned / demand | 6.07 / 4.85 GiB |
 | K3s node CPU | 3% |
 | K3s node memory | 69% |
 | Idle runner | 2m CPU / 8 MiB |

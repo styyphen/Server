@@ -1,13 +1,10 @@
 [CmdletBinding()]
 param(
-    [string]$KubectlPath = 'D:\HyperV\tools\kubectl-v1.36.1.exe',
-    [string]$KubeconfigPath = 'D:\HyperV\credentials\k3s-admin.yaml',
-    [string]$VmName = 'local-k3s-server',
-    [string]$OutputDirectory = 'D:\HyperV\operations\health',
-    [double]$MinimumHostFreeGiB = 4,
+    [string]$KubectlPath = 'kubectl',
+    [string]$KubeconfigPath = '/etc/rancher/k3s/k3s.yaml',
+    [string]$OutputDirectory = './.local/server-platform/operations/health',
     [double]$MinimumNodeFreePercent = 15,
-    [int]$ReportRetentionDays = 30,
-    [switch]$SkipHyperV
+    [int]$ReportRetentionDays = 30
 )
 
 Set-StrictMode -Version Latest
@@ -65,9 +62,9 @@ function Invoke-KubectlJson {
 try {
     Write-HealthEvent -Level info -Event daily_health_started `
         -Message 'Daily platform health validation started.' `
-        -Data @{ vm = $VmName }
+        -Data @{}
 
-    if (-not (Test-Path -LiteralPath $KubectlPath -PathType Leaf)) {
+    if (-not (Get-Command $KubectlPath -ErrorAction SilentlyContinue)) {
         throw "kubectl was not found at '$KubectlPath'."
     }
     if (-not (Test-Path -LiteralPath $KubeconfigPath -PathType Leaf)) {
@@ -75,25 +72,6 @@ try {
     }
     if ($ReportRetentionDays -lt 1) {
         throw 'ReportRetentionDays must be at least 1.'
-    }
-
-    $os = Get-CimInstance Win32_OperatingSystem
-    $hostFreeGiB = [math]::Round(($os.FreePhysicalMemory * 1KB) / 1GB, 2)
-    Add-HealthCheck -Name host_memory -Passed ($hostFreeGiB -ge $MinimumHostFreeGiB) `
-        -Message "Windows has $hostFreeGiB GiB free memory." `
-        -Evidence @{ free_gib = $hostFreeGiB; minimum_gib = $MinimumHostFreeGiB }
-
-    if (-not $SkipHyperV) {
-        $vm = Get-VM -Name $VmName
-        $vmMemory = Get-VMMemory -VMName $VmName
-        Add-HealthCheck -Name hyperv_vm -Passed ($vm.State.ToString() -eq 'Running') `
-            -Message "Hyper-V VM '$VmName' is $($vm.State)." `
-            -Evidence @{
-                state = $vm.State.ToString()
-                assigned_gib = [math]::Round($vm.MemoryAssigned / 1GB, 2)
-                demand_gib = [math]::Round($vm.MemoryDemand / 1GB, 2)
-                maximum_gib = [math]::Round($vmMemory.Maximum / 1GB, 2)
-            }
     }
 
     $nodes = Invoke-KubectlJson -Arguments @('get', 'nodes', '-o', 'json')
