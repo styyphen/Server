@@ -78,7 +78,7 @@
     {
       "id": 1,
       "type": "stat",
-      "title": "Platform Health",
+      "title": "🛡  PLATFORM HEALTH",
       "description": "All monitored platform targets",
       "gridPos": {
         "h": 4,
@@ -108,7 +108,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "value_and_name"
+        "textMode": "value_and_name",
+        "text": {
+          "titleSize": 15,
+          "valueSize": 30
+        }
       },
       "fieldConfig": {
         "defaults": {
@@ -150,7 +154,7 @@
     {
       "id": 2,
       "type": "stat",
-      "title": "Critical Alerts",
+      "title": "🚨  Critical Alerts",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -175,6 +179,10 @@
             "lastNotNull"
           ],
           "values": false
+        },
+        "text": {
+          "titleSize": 15,
+          "valueSize": 30
         }
       },
       "fieldConfig": {
@@ -199,7 +207,7 @@
     {
       "id": 3,
       "type": "stat",
-      "title": "Warnings",
+      "title": "⚠  Warnings",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -224,6 +232,10 @@
             "lastNotNull"
           ],
           "values": false
+        },
+        "text": {
+          "titleSize": 15,
+          "valueSize": 30
         }
       },
       "fieldConfig": {
@@ -248,7 +260,7 @@
     {
       "id": 4,
       "type": "stat",
-      "title": "Node Ready",
+      "title": "✓  Node Ready",
       "gridPos": {
         "h": 4,
         "w": 5,
@@ -273,6 +285,10 @@
             "lastNotNull"
           ],
           "values": false
+        },
+        "text": {
+          "titleSize": 15,
+          "valueSize": 30
         }
       },
       "fieldConfig": {
@@ -312,7 +328,7 @@
     {
       "id": 5,
       "type": "stat",
-      "title": "Production Availability",
+      "title": "⬡  Production",
       "gridPos": {
         "h": 4,
         "w": 5,
@@ -337,6 +353,10 @@
             "lastNotNull"
           ],
           "values": false
+        },
+        "text": {
+          "titleSize": 15,
+          "valueSize": 30
         }
       },
       "fieldConfig": {
@@ -366,7 +386,7 @@
     {
       "id": 20,
       "type": "stat",
-      "title": "Gitea",
+      "title": "◆  Gitea",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -395,7 +415,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "value_and_name"
+        "textMode": "value",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 22
+        }
       },
       "fieldConfig": {
         "defaults": {
@@ -439,12 +463,13 @@
           }
         },
         "overrides": []
-      }
+      },
+      "description": "◆  Gitea health. Click the status to open the native tool."
     },
     {
       "id": 21,
       "type": "stat",
-      "title": "SonarQube",
+      "title": "◉  SonarQube",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -473,7 +498,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "value_and_name"
+        "textMode": "value",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 22
+        }
       },
       "fieldConfig": {
         "defaults": {
@@ -517,12 +546,13 @@
           }
         },
         "overrides": []
-      }
+      },
+      "description": "◉  SonarQube health. Click the status to open the native tool."
     },
     {
       "id": 22,
       "type": "stat",
-      "title": "Registry",
+      "title": "▣  Registry",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -551,7 +581,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "value_and_name"
+        "textMode": "value",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 22
+        }
       },
       "fieldConfig": {
         "defaults": {
@@ -595,12 +629,13 @@
           }
         },
         "overrides": []
-      }
+      },
+      "description": "▣  Registry health. Click the status to open the native tool."
     },
     {
       "id": 23,
       "type": "stat",
-      "title": "Prometheus",
+      "title": "🔥  Prometheus",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -629,7 +664,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "value_and_name"
+        "textMode": "value",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 22
+        }
       },
       "fieldConfig": {
         "defaults": {
@@ -673,12 +712,13 @@
           }
         },
         "overrides": []
-      }
+      },
+      "description": "🔥  Prometheus health. Click the status to open the native tool."
     },
     {
       "id": 24,
       "type": "stat",
-      "title": "Grafana",
+      "title": "◌  Grafana",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -707,7 +747,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "value_and_name"
+        "textMode": "value",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 22
+        }
       },
       "fieldConfig": {
         "defaults": {
@@ -751,12 +795,13 @@
           }
         },
         "overrides": []
-      }
+      },
+      "description": "◌  Grafana health. Click the status to open the native tool."
     },
     {
       "id": 25,
       "type": "stat",
-      "title": "Alertmanager",
+      "title": "🔔  Alertmanager",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -785,7 +830,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "value_and_name"
+        "textMode": "value",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 22
+        }
       },
       "fieldConfig": {
         "defaults": {
@@ -829,12 +878,13 @@
           }
         },
         "overrides": []
-      }
+      },
+      "description": "🔔  Alertmanager health. Click the status to open the native tool."
     },
     {
       "id": 26,
       "type": "stat",
-      "title": "Loki",
+      "title": "▥  Loki",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -863,7 +913,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "value_and_name"
+        "textMode": "value",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 22
+        }
       },
       "fieldConfig": {
         "defaults": {
@@ -907,12 +961,13 @@
           }
         },
         "overrides": []
-      }
+      },
+      "description": "▥  Loki health. Click the status to open the native tool."
     },
     {
       "id": 27,
       "type": "stat",
-      "title": "Tempo",
+      "title": "🔨  Tempo",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -941,7 +996,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "value_and_name"
+        "textMode": "value",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 22
+        }
       },
       "fieldConfig": {
         "defaults": {
@@ -985,12 +1044,13 @@
           }
         },
         "overrides": []
-      }
+      },
+      "description": "🔨  Tempo health. Click the status to open the native tool."
     },
     {
       "id": 28,
       "type": "stat",
-      "title": "OpenTelemetry",
+      "title": "↗  OpenTelemetry",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -1019,7 +1079,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "value_and_name"
+        "textMode": "value",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 22
+        }
       },
       "fieldConfig": {
         "defaults": {
@@ -1063,12 +1127,13 @@
           }
         },
         "overrides": []
-      }
+      },
+      "description": "↗  OpenTelemetry health. Click the status to open the native tool."
     },
     {
       "id": 29,
       "type": "stat",
-      "title": "Full-stack Demo",
+      "title": "⬡  Full-stack Demo",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -1097,7 +1162,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "value_and_name"
+        "textMode": "value",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 22
+        }
       },
       "fieldConfig": {
         "defaults": {
@@ -1141,12 +1210,13 @@
           }
         },
         "overrides": []
-      }
+      },
+      "description": "⬡  Full-stack Demo health. Click the status to open the native tool."
     },
     {
       "id": 30,
       "type": "stat",
-      "title": "Kubernetes State",
+      "title": "◇  Kubernetes State",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -1175,7 +1245,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "value_and_name"
+        "textMode": "value",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 22
+        }
       },
       "fieldConfig": {
         "defaults": {
@@ -1219,12 +1293,13 @@
           }
         },
         "overrides": []
-      }
+      },
+      "description": "◇  Kubernetes State health. Click the status to open the native tool."
     },
     {
       "id": 31,
       "type": "stat",
-      "title": "Node Exporter",
+      "title": "▦  Node Exporter",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -1253,7 +1328,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "value_and_name"
+        "textMode": "value",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 22
+        }
       },
       "fieldConfig": {
         "defaults": {
@@ -1297,12 +1376,13 @@
           }
         },
         "overrides": []
-      }
+      },
+      "description": "▦  Node Exporter health. Click the status to open the native tool."
     },
     {
       "id": 32,
       "type": "table",
-      "title": "Production Deployments",
+      "title": "⬡  Production Deployments",
       "gridPos": {
         "h": 7,
         "w": 8,
@@ -1376,7 +1456,7 @@
     {
       "id": 33,
       "type": "table",
-      "title": "Active Alerts & Incidents",
+      "title": "🔔  Active Alerts & Incidents",
       "gridPos": {
         "h": 7,
         "w": 8,
@@ -1434,7 +1514,7 @@
     {
       "id": 34,
       "type": "stat",
-      "title": "Recent CI/CD & Current Release",
+      "title": "⑂  Recent CI/CD & Current Release",
       "gridPos": {
         "h": 7,
         "w": 8,
@@ -1468,7 +1548,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "value_and_name"
+        "textMode": "value_and_name",
+        "text": {
+          "titleSize": 14,
+          "valueSize": 22
+        }
       },
       "fieldConfig": {
         "defaults": {
@@ -1514,7 +1598,7 @@
     {
       "id": 8,
       "type": "timeseries",
-      "title": "Node CPU / Memory / Disk",
+      "title": "▥  Node CPU / Memory / Disk",
       "gridPos": {
         "h": 8,
         "w": 8,
@@ -1588,7 +1672,7 @@
     {
       "id": 9,
       "type": "timeseries",
-      "title": "Pod Restarts & Failures",
+      "title": "▤  Pod Restarts & Failures",
       "gridPos": {
         "h": 8,
         "w": 8,
@@ -1638,7 +1722,7 @@
     {
       "id": 10,
       "type": "timeseries",
-      "title": "Application Requests",
+      "title": "⌁  Request Rate / Availability",
       "gridPos": {
         "h": 8,
         "w": 8,
@@ -1688,7 +1772,7 @@
     {
       "id": 14,
       "type": "stat",
-      "title": "Top Container CPU by Pod",
+      "title": "▥  Top Container CPU by Pod",
       "gridPos": {
         "h": 7,
         "w": 12,
@@ -1728,7 +1812,7 @@
     {
       "id": 12,
       "type": "logs",
-      "title": "Recent Warning / Error Logs",
+      "title": "▤  Recent Logs (live)",
       "gridPos": {
         "h": 7,
         "w": 12,
@@ -1760,7 +1844,7 @@
     {
       "id": 15,
       "type": "text",
-      "title": "Drill Down to Native Tools",
+      "title": "⌘  Drill Down to Native Tools",
       "gridPos": {
         "h": 4,
         "w": 24,
@@ -1791,7 +1875,8 @@
   "timezone": "browser",
   "title": "Platform Operations",
   "uid": "platform-ops-overview",
-  "version": 2,
+  "version": 3,
   "weekStart": "",
-  "style": "dark"
+  "style": "dark",
+  "description": "Incident-first operations view for the standalone Kubernetes development platform. Service glyphs identify each native tool; select a card or drill-down link for details."
 }
