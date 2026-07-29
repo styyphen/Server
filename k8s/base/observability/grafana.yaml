@@ -104,6 +104,7 @@ spec:
               valueFrom:
                 secretKeyRef: {name: grafana-admin, key: password}
             - {name: GF_USERS_DEFAULT_THEME, value: light}
+            - {name: GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH, value: /var/lib/grafana/provisioned/platform-operations.json}
             - {name: GF_USERS_ALLOW_SIGN_UP, value: "false"}
             - {name: GF_AUTH_ANONYMOUS_ENABLED, value: "false"}
             - {name: GF_SERVER_ROOT_URL, value: "https://grafana.dev.home.arpa/"}
@@ -136,12 +137,22 @@ spec:
           volumeMounts:
             - {name: data, mountPath: /var/lib/grafana}
             - {name: provisioning, mountPath: /etc/grafana/provisioning/datasources, readOnly: true}
+            - {name: dashboard-provider, mountPath: /etc/grafana/provisioning/dashboards, readOnly: true}
+            - {name: platform-dashboard, mountPath: /var/lib/grafana/provisioned, readOnly: true}
             - {name: tmp, mountPath: /tmp}
       volumes:
         - name: data
           persistentVolumeClaim: {claimName: grafana-data}
         - name: provisioning
           configMap: {name: grafana-provisioning}
+        - name: dashboard-provider
+          configMap:
+            name: grafana-platform-dashboard
+            items: [{key: provider.yml, path: platform.yml}]
+        - name: platform-dashboard
+          configMap:
+            name: grafana-platform-dashboard
+            items: [{key: platform-operations.json, path: platform-operations.json}]
         - name: tmp
           emptyDir: {sizeLimit: 64Mi}
       terminationGracePeriodSeconds: 30

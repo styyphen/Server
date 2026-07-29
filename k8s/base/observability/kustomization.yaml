@@ -4,9 +4,18 @@ resources:
   - prometheus.yaml
   - alertmanager.yaml
   - node-exporter.yaml
+  - kube-state-metrics.yaml
   - grafana.yaml
   - loki.yaml
   - promtail.yaml
   - tempo.yaml
   - otel-collector.yaml
   - network-policies.yaml
+configMapGenerator:
+  - name: grafana-platform-dashboard
+    namespace: observability
+    files:
+      - provider.yml=grafana/provider.yml
+      - platform-operations.json=grafana/platform-operations.json
+generatorOptions:
+  disableNameSuffixHash: true

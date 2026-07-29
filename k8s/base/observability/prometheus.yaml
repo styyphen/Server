@@ -75,6 +75,18 @@ data:
           credentials_file: /var/run/secrets/kubernetes.io/serviceaccount/token
         kubernetes_sd_configs:
           - role: node
+      - job_name: kubelet-cadvisor
+        scheme: https
+        metrics_path: /metrics/cadvisor
+        tls_config:
+          insecure_skip_verify: true
+        authorization:
+          credentials_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        kubernetes_sd_configs:
+          - role: node
+      - job_name: kube-state-metrics
+        static_configs:
+          - targets: [kube-state-metrics.observability.svc.cluster.local:8080]
       - job_name: node-exporter
         static_configs:
           - targets: [node-exporter.kube-system.svc.cluster.local:9100]
@@ -101,6 +113,17 @@ data:
           - targets: [junior-fullstack-demo.demo-apps.svc.cluster.local:8080]
   alerts.yml: |
     groups:
+      - name: platform-recording
+        interval: 30s
+        rules:
+          - record: platform:node_cpu_usage:ratio
+            expr: 1 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m]))
+          - record: platform:node_memory_usage:ratio
+            expr: 1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes
+          - record: platform:node_disk_usage:max_ratio
+            expr: max(1 - node_filesystem_avail_bytes{fstype!~"tmpfs|overlay|squashfs"} / node_filesystem_size_bytes{fstype!~"tmpfs|overlay|squashfs"})
+          - record: platform:production_available:ratio
+            expr: sum(kube_deployment_status_replicas_available{namespace="demo-apps"}) / clamp_min(sum(kube_deployment_spec_replicas{namespace="demo-apps"}), 1)
       - name: local-server
         rules:
           - alert: NodeUnavailable
@@ -118,6 +141,31 @@ data:
             for: 5m
             labels: {severity: warning}
             annotations: {summary: Node filesystem usage exceeds 80 percent}
+          - alert: NodeCPUHigh
+            expr: platform:node_cpu_usage:ratio > 0.85
+            for: 10m
+            labels: {severity: warning}
+            annotations: {summary: Node CPU usage exceeds 85 percent}
+          - alert: PlatformServiceDown
+            expr: up{job=~"prometheus|alertmanager|node-exporter|gitea|registry|loki|promtail|otel-collector|junior-fullstack-demo|kube-state-metrics"} == 0
+            for: 2m
+            labels: {severity: critical}
+            annotations: {summary: "Platform service {{ $labels.job }} is unavailable"}
+          - alert: ProductionDeploymentUnavailable
+            expr: kube_deployment_status_replicas_available{namespace="demo-apps"} < kube_deployment_spec_replicas{namespace="demo-apps"}
+            for: 2m
+            labels: {severity: critical}
+            annotations: {summary: "Production deployment {{ $labels.deployment }} has unavailable replicas"}
+          - alert: ContainerRestarting
+            expr: increase(kube_pod_container_status_restarts_total[15m]) > 3
+            for: 2m
+            labels: {severity: warning}
+            annotations: {summary: "Container {{ $labels.container }} is repeatedly restarting"}
+          - alert: ContainerWaiting
+            expr: kube_pod_container_status_waiting_reason{reason=~"CrashLoopBackOff|ImagePullBackOff|ErrImagePull"} > 0
+            for: 5m
+            labels: {severity: critical}
+            annotations: {summary: "Container {{ $labels.container }} is blocked in {{ $labels.reason }}"}
           - alert: ControlledPhaseETest
             expr: vector(0) == 1
             labels: {severity: test}
