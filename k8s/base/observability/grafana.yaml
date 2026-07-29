@@ -103,7 +103,7 @@ spec:
             - name: GF_SECURITY_ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef: {name: grafana-admin, key: password}
-            - {name: GF_USERS_DEFAULT_THEME, value: light}
+            - {name: GF_USERS_DEFAULT_THEME, value: dark}
             - {name: GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH, value: /var/lib/grafana/provisioned/platform-operations.json}
             - {name: GF_USERS_ALLOW_SIGN_UP, value: "false"}
             - {name: GF_AUTH_ANONYMOUS_ENABLED, value: "false"}

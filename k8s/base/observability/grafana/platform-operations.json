@@ -1,32 +1,1797 @@
 {
-  "annotations":{"list":[{"builtIn":1,"datasource":{"type":"grafana","uid":"-- Grafana --"},"enable":true,"hide":true,"iconColor":"rgba(0,211,255,1)","name":"Annotations & Alerts","type":"dashboard"}]},
-  "editable":false,"fiscalYearStartMonth":0,"graphTooltip":1,"id":null,
-  "links":[
-    {"asDropdown":true,"icon":"external link","includeVars":false,"keepTime":true,"tags":[],"targetBlank":true,"title":"Native tools","type":"link","url":""},
-    {"icon":"external link","targetBlank":true,"title":"Gitea","type":"link","url":"http://localhost:3000"},
-    {"icon":"external link","targetBlank":true,"title":"SonarQube","type":"link","url":"http://localhost:9000"},
-    {"icon":"external link","targetBlank":true,"title":"Prometheus","type":"link","url":"http://localhost:9090"},
-    {"icon":"external link","targetBlank":true,"title":"Alertmanager","type":"link","url":"http://localhost:9093"},
-    {"icon":"external link","targetBlank":true,"title":"Loki","type":"link","url":"http://localhost:3100"},
-    {"icon":"external link","targetBlank":true,"title":"Tempo","type":"link","url":"http://localhost:3200"}
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0,211,255,1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": true,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": true,
+      "title": "Native tools",
+      "type": "link",
+      "url": ""
+    },
+    {
+      "icon": "external link",
+      "targetBlank": true,
+      "title": "Gitea",
+      "type": "link",
+      "url": "http://localhost:3000"
+    },
+    {
+      "icon": "external link",
+      "targetBlank": true,
+      "title": "SonarQube",
+      "type": "link",
+      "url": "http://localhost:9000"
+    },
+    {
+      "icon": "external link",
+      "targetBlank": true,
+      "title": "Prometheus",
+      "type": "link",
+      "url": "http://localhost:9090"
+    },
+    {
+      "icon": "external link",
+      "targetBlank": true,
+      "title": "Alertmanager",
+      "type": "link",
+      "url": "http://localhost:9093"
+    },
+    {
+      "icon": "external link",
+      "targetBlank": true,
+      "title": "Loki",
+      "type": "link",
+      "url": "http://localhost:3100"
+    },
+    {
+      "icon": "external link",
+      "targetBlank": true,
+      "title": "Tempo",
+      "type": "link",
+      "url": "http://localhost:3200"
+    }
   ],
-  "panels":[
-    {"id":1,"type":"stat","title":"Platform Health","description":"All monitored platform targets","gridPos":{"h":4,"w":6,"x":0,"y":0},"datasource":{"type":"prometheus","uid":"prometheus"},"targets":[{"expr":"min(up{job=~\"prometheus|alertmanager|node-exporter|gitea|registry|loki|promtail|otel-collector|junior-fullstack-demo|kube-state-metrics\"})","refId":"A"}],"options":{"colorMode":"background","graphMode":"none","justifyMode":"center","orientation":"horizontal","reduceOptions":{"calcs":["lastNotNull"],"fields":"","values":false},"textMode":"value_and_name"},"fieldConfig":{"defaults":{"color":{"mode":"thresholds"},"mappings":[{"options":{"0":{"color":"red","text":"DEGRADED"},"1":{"color":"green","text":"HEALTHY"}},"type":"value"}],"thresholds":{"mode":"absolute","steps":[{"color":"red","value":null},{"color":"green","value":1}]}},"overrides":[]}},
-    {"id":2,"type":"stat","title":"Critical Alerts","gridPos":{"h":4,"w":4,"x":6,"y":0},"datasource":{"type":"prometheus","uid":"prometheus"},"targets":[{"expr":"count(ALERTS{alertstate=\"firing\",severity=\"critical\"}) or vector(0)","refId":"A"}],"options":{"colorMode":"value","graphMode":"none","reduceOptions":{"calcs":["lastNotNull"],"values":false}},"fieldConfig":{"defaults":{"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"red","value":1}]}},"overrides":[]}},
-    {"id":3,"type":"stat","title":"Warnings","gridPos":{"h":4,"w":4,"x":10,"y":0},"datasource":{"type":"prometheus","uid":"prometheus"},"targets":[{"expr":"count(ALERTS{alertstate=\"firing\",severity=\"warning\"}) or vector(0)","refId":"A"}],"options":{"colorMode":"value","graphMode":"none","reduceOptions":{"calcs":["lastNotNull"],"values":false}},"fieldConfig":{"defaults":{"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"yellow","value":1}]}},"overrides":[]}},
-    {"id":4,"type":"stat","title":"Node Ready","gridPos":{"h":4,"w":5,"x":14,"y":0},"datasource":{"type":"prometheus","uid":"prometheus"},"targets":[{"expr":"max(kube_node_status_condition{condition=\"Ready\",status=\"true\"})","refId":"A"}],"options":{"colorMode":"background","graphMode":"none","reduceOptions":{"calcs":["lastNotNull"],"values":false}},"fieldConfig":{"defaults":{"mappings":[{"options":{"0":{"color":"red","text":"NOT READY"},"1":{"color":"green","text":"READY"}},"type":"value"}],"thresholds":{"mode":"absolute","steps":[{"color":"red","value":null},{"color":"green","value":1}]}},"overrides":[]}},
-    {"id":5,"type":"stat","title":"Production Availability","gridPos":{"h":4,"w":5,"x":19,"y":0},"datasource":{"type":"prometheus","uid":"prometheus"},"targets":[{"expr":"platform:production_available:ratio","refId":"A"}],"options":{"colorMode":"background","graphMode":"none","reduceOptions":{"calcs":["lastNotNull"],"values":false}},"fieldConfig":{"defaults":{"unit":"percentunit","thresholds":{"mode":"absolute","steps":[{"color":"red","value":null},{"color":"yellow","value":0.9},{"color":"green","value":1}]}},"overrides":[]}},
-    {"id":6,"type":"stat","title":"Core Services","gridPos":{"h":5,"w":12,"x":0,"y":4},"datasource":{"type":"prometheus","uid":"prometheus"},"targets":[{"expr":"up{job=~\"gitea|registry|prometheus|alertmanager|loki|otel-collector\"}","legendFormat":"{{job}}","refId":"A"}],"options":{"colorMode":"background","graphMode":"none","orientation":"horizontal","reduceOptions":{"calcs":["lastNotNull"],"values":false},"textMode":"value_and_name"},"fieldConfig":{"defaults":{"mappings":[{"options":{"0":{"color":"red","text":"DOWN"},"1":{"color":"green","text":"UP"}},"type":"value"}],"thresholds":{"mode":"absolute","steps":[{"color":"red","value":null},{"color":"green","value":1}]}},"overrides":[]}},
-    {"id":7,"type":"stat","title":"Workloads Ready","gridPos":{"h":5,"w":12,"x":12,"y":4},"datasource":{"type":"prometheus","uid":"prometheus"},"targets":[{"expr":"kube_deployment_status_replicas_available{namespace=~\"platform-system|observability|demo-apps\"}","legendFormat":"{{namespace}} / {{deployment}}","refId":"A"}],"options":{"colorMode":"value","graphMode":"none","orientation":"horizontal","reduceOptions":{"calcs":["lastNotNull"],"values":false},"textMode":"value_and_name"},"fieldConfig":{"defaults":{"thresholds":{"mode":"absolute","steps":[{"color":"red","value":null},{"color":"green","value":1}]}},"overrides":[]}},
-    {"id":8,"type":"timeseries","title":"Node CPU / Memory / Disk","gridPos":{"h":8,"w":8,"x":0,"y":9},"datasource":{"type":"prometheus","uid":"prometheus"},"targets":[{"expr":"platform:node_cpu_usage:ratio * 100","legendFormat":"CPU","refId":"A"},{"expr":"platform:node_memory_usage:ratio * 100","legendFormat":"Memory","refId":"B"},{"expr":"platform:node_disk_usage:max_ratio * 100","legendFormat":"Disk max","refId":"C"}],"fieldConfig":{"defaults":{"unit":"percent","min":0,"max":100,"custom":{"lineWidth":2,"fillOpacity":12,"showPoints":"never"},"thresholds":{"mode":"absolute","steps":[{"color":"green","value":null},{"color":"yellow","value":75},{"color":"red","value":90}]}},"overrides":[]},"options":{"legend":{"displayMode":"table","placement":"bottom","calcs":["lastNotNull"]},"tooltip":{"mode":"multi"}}},
-    {"id":9,"type":"timeseries","title":"Pod Restarts & Failures","gridPos":{"h":8,"w":8,"x":8,"y":9},"datasource":{"type":"prometheus","uid":"prometheus"},"targets":[{"expr":"sum(increase(kube_pod_container_status_restarts_total[5m]))","legendFormat":"Restarts / 5m","refId":"A"},{"expr":"sum(kube_pod_container_status_waiting_reason{reason=~\"CrashLoopBackOff|ImagePullBackOff|ErrImagePull\"})","legendFormat":"Blocked containers","refId":"B"}],"fieldConfig":{"defaults":{"min":0,"custom":{"lineWidth":2,"fillOpacity":12,"showPoints":"never"}},"overrides":[]},"options":{"legend":{"displayMode":"table","placement":"bottom","calcs":["lastNotNull"]},"tooltip":{"mode":"multi"}}},
-    {"id":10,"type":"timeseries","title":"Application Requests","gridPos":{"h":8,"w":8,"x":16,"y":9},"datasource":{"type":"prometheus","uid":"prometheus"},"targets":[{"expr":"sum(rate(demo_http_requests_total[5m]))","legendFormat":"Requests / sec","refId":"A"},{"expr":"up{job=\"junior-fullstack-demo\"}","legendFormat":"Application up","refId":"B"}],"fieldConfig":{"defaults":{"min":0,"custom":{"lineWidth":2,"fillOpacity":10,"showPoints":"never"}},"overrides":[]},"options":{"legend":{"displayMode":"table","placement":"bottom","calcs":["lastNotNull"]},"tooltip":{"mode":"multi"}}},
-    {"id":11,"type":"table","title":"Active Alerts & Incidents","gridPos":{"h":7,"w":12,"x":0,"y":17},"datasource":{"type":"prometheus","uid":"prometheus"},"targets":[{"expr":"ALERTS{alertstate=\"firing\"}","format":"table","instant":true,"refId":"A"}],"options":{"showHeader":true,"cellHeight":"sm"},"fieldConfig":{"defaults":{},"overrides":[]},"transformations":[{"id":"organize","options":{"excludeByName":{"Time":true,"__name__":true,"alertstate":true,"job":true},"indexByName":{"severity":0,"alertname":1,"namespace":2,"pod":3,"Value":4}}}]},
-    {"id":12,"type":"logs","title":"Recent Warning / Error Logs","gridPos":{"h":7,"w":12,"x":12,"y":17},"datasource":{"type":"loki","uid":"loki"},"targets":[{"expr":"{job=\"kubernetes-pods\"} |~ `(?i)warn|error|failed|unhealthy`","refId":"A","queryType":"range"}],"options":{"showTime":true,"showLabels":true,"showCommonLabels":false,"wrapLogMessage":true,"prettifyLogMessage":false,"enableLogDetails":true,"sortOrder":"Descending","dedupStrategy":"none"}},
-    {"id":13,"type":"stat","title":"Current Production Release","gridPos":{"h":4,"w":8,"x":0,"y":24},"datasource":{"type":"prometheus","uid":"prometheus"},"targets":[{"expr":"demo_build_info","legendFormat":"{{version}} · {{commit}}","refId":"A"}],"options":{"colorMode":"value","graphMode":"none","reduceOptions":{"calcs":["lastNotNull"],"values":false},"textMode":"name"},"fieldConfig":{"defaults":{"color":{"mode":"fixed"}},"overrides":[]}},
-    {"id":14,"type":"stat","title":"Container CPU (Top Pods)","gridPos":{"h":4,"w":8,"x":8,"y":24},"datasource":{"type":"prometheus","uid":"prometheus"},"targets":[{"expr":"topk(5, sum by (namespace,pod) (rate(container_cpu_usage_seconds_total{container!=\"\",image!=\"\"}[5m])))","legendFormat":"{{namespace}} / {{pod}}","refId":"A"}],"options":{"colorMode":"value","graphMode":"area","orientation":"horizontal","reduceOptions":{"calcs":["lastNotNull"],"values":false},"textMode":"value_and_name"},"fieldConfig":{"defaults":{"unit":"cores"},"overrides":[]}},
-    {"id":15,"type":"text","title":"Drill Down to Native Tools","gridPos":{"h":4,"w":8,"x":16,"y":24},"options":{"mode":"markdown","content":"[Gitea Actions](http://localhost:3000) · [SonarQube Quality](http://localhost:9000)\n\n[Prometheus Metrics](http://localhost:9090) · [Alertmanager](http://localhost:9093)\n\n[Loki Logs](http://localhost:3100) · [Tempo Traces](http://localhost:3200)"}}
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Platform Health",
+      "description": "All monitored platform targets",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "min(up{job=~\"prometheus|alertmanager|node-exporter|gitea|registry|loki|promtail|otel-collector|junior-fullstack-demo|kube-state-metrics\"})",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "text": "DEGRADED"
+                },
+                "1": {
+                  "color": "green",
+                  "text": "HEALTHY"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Critical Alerts",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 6,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "count(ALERTS{alertstate=\"firing\",severity=\"critical\"}) or vector(0)",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Warnings",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 10,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "count(ALERTS{alertstate=\"firing\",severity=\"warning\"}) or vector(0)",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Node Ready",
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 14,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "max(kube_node_status_condition{condition=\"Ready\",status=\"true\"})",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "text": "NOT READY"
+                },
+                "1": {
+                  "color": "green",
+                  "text": "READY"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Production Availability",
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 19,
+        "y": 0
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "platform:production_available:ratio",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.9
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 20,
+      "type": "stat",
+      "title": "Gitea",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "max(kube_statefulset_status_replicas_ready{namespace=\"platform-system\",statefulset=\"gitea\"})",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "links": [
+            {
+              "title": "Open Gitea",
+              "url": "http://localhost:3000",
+              "targetBlank": true
+            }
+          ],
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "text": "DOWN"
+                },
+                "1": {
+                  "color": "green",
+                  "text": "UP"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 21,
+      "type": "stat",
+      "title": "SonarQube",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "max(kube_deployment_status_replicas_available{namespace=\"cloud-emulators\",deployment=\"sonarqube\"})",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "links": [
+            {
+              "title": "Open SonarQube",
+              "url": "http://localhost:9000",
+              "targetBlank": true
+            }
+          ],
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "text": "DOWN"
+                },
+                "1": {
+                  "color": "green",
+                  "text": "UP"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 22,
+      "type": "stat",
+      "title": "Registry",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "max(up{job=\"registry\"})",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "links": [
+            {
+              "title": "Open Registry",
+              "url": "http://localhost:5001",
+              "targetBlank": true
+            }
+          ],
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "text": "DOWN"
+                },
+                "1": {
+                  "color": "green",
+                  "text": "UP"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 23,
+      "type": "stat",
+      "title": "Prometheus",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "max(up{job=\"prometheus\"})",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "links": [
+            {
+              "title": "Open Prometheus",
+              "url": "http://localhost:9090",
+              "targetBlank": true
+            }
+          ],
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "text": "DOWN"
+                },
+                "1": {
+                  "color": "green",
+                  "text": "UP"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 24,
+      "type": "stat",
+      "title": "Grafana",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "max(kube_deployment_status_replicas_available{namespace=\"observability\",deployment=\"grafana\"})",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "links": [
+            {
+              "title": "Open Grafana",
+              "url": "http://localhost:3001",
+              "targetBlank": true
+            }
+          ],
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "text": "DOWN"
+                },
+                "1": {
+                  "color": "green",
+                  "text": "UP"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 25,
+      "type": "stat",
+      "title": "Alertmanager",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "max(up{job=\"alertmanager\"})",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "links": [
+            {
+              "title": "Open Alertmanager",
+              "url": "http://localhost:9093",
+              "targetBlank": true
+            }
+          ],
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "text": "DOWN"
+                },
+                "1": {
+                  "color": "green",
+                  "text": "UP"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 26,
+      "type": "stat",
+      "title": "Loki",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "max(up{job=\"loki\"})",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "links": [
+            {
+              "title": "Open Loki",
+              "url": "http://localhost:3100",
+              "targetBlank": true
+            }
+          ],
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "text": "DOWN"
+                },
+                "1": {
+                  "color": "green",
+                  "text": "UP"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 27,
+      "type": "stat",
+      "title": "Tempo",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "max(kube_deployment_status_replicas_available{namespace=\"observability\",deployment=\"tempo\"})",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "links": [
+            {
+              "title": "Open Tempo",
+              "url": "http://localhost:3200",
+              "targetBlank": true
+            }
+          ],
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "text": "DOWN"
+                },
+                "1": {
+                  "color": "green",
+                  "text": "UP"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 28,
+      "type": "stat",
+      "title": "OpenTelemetry",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "max(up{job=\"otel-collector\"})",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "links": [
+            {
+              "title": "Open OpenTelemetry",
+              "url": "http://localhost:8889",
+              "targetBlank": true
+            }
+          ],
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "text": "DOWN"
+                },
+                "1": {
+                  "color": "green",
+                  "text": "UP"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 29,
+      "type": "stat",
+      "title": "Full-stack Demo",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "max(up{job=\"junior-fullstack-demo\"})",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "links": [
+            {
+              "title": "Open Full-stack Demo",
+              "url": "http://localhost:8080",
+              "targetBlank": true
+            }
+          ],
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "text": "DOWN"
+                },
+                "1": {
+                  "color": "green",
+                  "text": "UP"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 30,
+      "type": "stat",
+      "title": "Kubernetes State",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "max(up{job=\"kube-state-metrics\"})",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "links": [
+            {
+              "title": "Open Kubernetes State",
+              "url": "http://localhost:9090/targets",
+              "targetBlank": true
+            }
+          ],
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "text": "DOWN"
+                },
+                "1": {
+                  "color": "green",
+                  "text": "UP"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 31,
+      "type": "stat",
+      "title": "Node Exporter",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "max(up{job=\"node-exporter\"})",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "links": [
+            {
+              "title": "Open Node Exporter",
+              "url": "http://localhost:9090/targets",
+              "targetBlank": true
+            }
+          ],
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "text": "DOWN"
+                },
+                "1": {
+                  "color": "green",
+                  "text": "UP"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 32,
+      "type": "table",
+      "title": "Production Deployments",
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 0,
+        "y": 12
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "kube_deployment_status_replicas_available{namespace=~\"demo-apps|platform-system|observability\"}",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "text": "UNAVAILABLE"
+                },
+                "1": {
+                  "color": "green",
+                  "text": "READY"
+                }
+              },
+              "type": "value"
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "container": true,
+              "endpoint": true,
+              "instance": true,
+              "job": true,
+              "service": true,
+              "uid": true
+            },
+            "indexByName": {
+              "namespace": 0,
+              "deployment": 1,
+              "Value": 2
+            },
+            "renameByName": {
+              "namespace": "Namespace",
+              "deployment": "Deployment",
+              "Value": "Available"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "type": "table",
+      "title": "Active Alerts & Incidents",
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 8,
+        "y": 12
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "ALERTS{alertstate=\"firing\"}",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "alertstate": true,
+              "job": true
+            },
+            "indexByName": {
+              "severity": 0,
+              "alertname": 1,
+              "namespace": 2,
+              "pod": 3,
+              "Value": 4
+            },
+            "renameByName": {
+              "severity": "Severity",
+              "alertname": "Alert",
+              "namespace": "Namespace",
+              "pod": "Pod",
+              "Value": "Value"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "type": "stat",
+      "title": "Recent CI/CD & Current Release",
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 16,
+        "y": 12
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "demo_build_info",
+          "legendFormat": "Release {{version}} · {{commit}}",
+          "refId": "A"
+        },
+        {
+          "expr": "up{job=\"junior-fullstack-demo\"}",
+          "legendFormat": "Production deployment",
+          "refId": "B"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "orientation": "vertical",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "links": [
+            {
+              "title": "Open Gitea Actions",
+              "url": "http://localhost:3000",
+              "targetBlank": true
+            }
+          ],
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "text": "FAILED"
+                },
+                "1": {
+                  "color": "green",
+                  "text": "PASSED / HEALTHY"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Node CPU / Memory / Disk",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 19
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "platform:node_cpu_usage:ratio * 100",
+          "legendFormat": "CPU",
+          "refId": "A"
+        },
+        {
+          "expr": "platform:node_memory_usage:ratio * 100",
+          "legendFormat": "Memory",
+          "refId": "B"
+        },
+        {
+          "expr": "platform:node_disk_usage:max_ratio * 100",
+          "legendFormat": "Disk max",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 12,
+            "showPoints": "never"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 75
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Pod Restarts & Failures",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 19
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "sum(increase(kube_pod_container_status_restarts_total[5m]))",
+          "legendFormat": "Restarts / 5m",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(kube_pod_container_status_waiting_reason{reason=~\"CrashLoopBackOff|ImagePullBackOff|ErrImagePull\"})",
+          "legendFormat": "Blocked containers",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 12,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Application Requests",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 19
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(demo_http_requests_total[5m]))",
+          "legendFormat": "Requests / sec",
+          "refId": "A"
+        },
+        {
+          "expr": "up{job=\"junior-fullstack-demo\"}",
+          "legendFormat": "Application up",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 14,
+      "type": "stat",
+      "title": "Top Container CPU by Pod",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 27
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "expr": "topk(5, sum by (namespace,pod) (rate(container_cpu_usage_seconds_total{container!=\"\",image!=\"\"}[5m])))",
+          "legendFormat": "{{namespace}} / {{pod}}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cores"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 12,
+      "type": "logs",
+      "title": "Recent Warning / Error Logs",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 27
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "expr": "{job=\"kubernetes-pods\"} |~ `(?i)warn|error|failed|unhealthy`",
+          "refId": "A",
+          "queryType": "range"
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none"
+      }
+    },
+    {
+      "id": 15,
+      "type": "text",
+      "title": "Drill Down to Native Tools",
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 34
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "[Gitea Actions](http://localhost:3000) · [SonarQube Quality](http://localhost:9000)\n\n[Prometheus Metrics](http://localhost:9090) · [Alertmanager](http://localhost:9093)\n\n[Loki Logs](http://localhost:3100) · [Tempo Traces](http://localhost:3200)"
+      }
+    }
   ],
-  "refresh":"30s","schemaVersion":40,"tags":["platform","operations","kubernetes"],"templating":{"list":[]},
-  "time":{"from":"now-1h","to":"now"},"timepicker":{},"timezone":"browser","title":"Platform Operations","uid":"platform-ops-overview","version":1,"weekStart":""
+  "refresh": "30s",
+  "schemaVersion": 40,
+  "tags": [
+    "platform",
+    "operations",
+    "kubernetes"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Platform Operations",
+  "uid": "platform-ops-overview",
+  "version": 2,
+  "weekStart": "",
+  "style": "dark"
 }
