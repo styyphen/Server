@@ -77,9 +77,9 @@
   "panels": [
     {
       "id": 1,
-      "type": "stat",
-      "title": "🛡  PLATFORM HEALTH",
-      "description": "All monitored platform targets",
+      "type": "canvas",
+      "title": "",
+      "description": "Overall health of critical platform services",
       "gridPos": {
         "h": 4,
         "w": 6,
@@ -93,25 +93,215 @@
       "targets": [
         {
           "expr": "min(up{job=~\"prometheus|alertmanager|node-exporter|gitea|registry|loki|promtail|otel-collector|junior-fullstack-demo|kube-state-metrics\"})",
-          "refId": "A"
+          "refId": "A",
+          "legendFormat": "Status",
+          "instant": true,
+          "range": false
         }
       ],
       "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value_and_name",
-        "text": {
-          "titleSize": 15,
-          "valueSize": 30
+        "inlineEditing": false,
+        "showAdvancedTypes": true,
+        "panZoom": false,
+        "infinitePan": false,
+        "root": {
+          "name": "Platform health card",
+          "type": "frame",
+          "elements": [
+            {
+              "constraint": {
+                "horizontal": "leftright",
+                "vertical": "topbottom"
+              },
+              "background": {
+                "color": {
+                  "field": "Status",
+                  "fixed": "#1F5F2F"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Healthy background",
+              "type": "rectangle",
+              "config": {
+                "align": "center",
+                "valign": "middle",
+                "color": {
+                  "fixed": "transparent"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": ""
+                }
+              },
+              "placement": {
+                "top": 0,
+                "bottom": 0,
+                "left": 0,
+                "right": 0,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Health shield",
+              "type": "icon",
+              "config": {
+                "path": {
+                  "mode": "fixed",
+                  "fixed": "img/platform/shield-check.svg"
+                },
+                "fill": {
+                  "fixed": "#FFFFFF"
+                }
+              },
+              "placement": {
+                "top": 18,
+                "left": 20,
+                "width": 64,
+                "height": 64,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Health title",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#FFFFFF"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "PLATFORM HEALTH"
+                },
+                "size": 24
+              },
+              "placement": {
+                "top": 13,
+                "left": 100,
+                "width": 260,
+                "height": 35,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Health status",
+              "type": "metric-value",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#D8F5DC"
+                },
+                "text": {
+                  "mode": "field",
+                  "field": "Status",
+                  "fixed": ""
+                },
+                "size": 15
+              },
+              "placement": {
+                "top": 47,
+                "left": 100,
+                "width": 130,
+                "height": 24,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Health detail",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#D8F5DC"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "All critical services operational"
+                },
+                "size": 11
+              },
+              "placement": {
+                "top": 70,
+                "left": 100,
+                "width": 260,
+                "height": 20,
+                "rotation": 0
+              }
+            }
+          ]
         }
       },
       "fieldConfig": {
@@ -385,8 +575,8 @@
     },
     {
       "id": 20,
-      "type": "stat",
-      "title": "◆  Gitea",
+      "type": "canvas",
+      "title": "",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -400,25 +590,191 @@
       "targets": [
         {
           "expr": "max(kube_statefulset_status_replicas_ready{namespace=\"platform-system\",statefulset=\"gitea\"})",
-          "refId": "A"
+          "refId": "A",
+          "legendFormat": "Status",
+          "instant": true,
+          "range": false
         }
       ],
       "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value",
-        "text": {
-          "titleSize": 14,
-          "valueSize": 22
+        "inlineEditing": false,
+        "showAdvancedTypes": true,
+        "panZoom": false,
+        "infinitePan": false,
+        "root": {
+          "name": "Service card",
+          "type": "frame",
+          "elements": [
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "link",
+              "name": "Service icon",
+              "type": "icon",
+              "config": {
+                "path": {
+                  "mode": "fixed",
+                  "fixed": "img/platform/gitea.svg"
+                },
+                "fill": {
+                  "fixed": "#609926"
+                }
+              },
+              "placement": {
+                "top": 13,
+                "left": 14,
+                "width": 44,
+                "height": 44,
+                "rotation": 0
+              },
+              "links": [
+                {
+                  "title": "Open Gitea",
+                  "url": "http://localhost:3000",
+                  "targetBlank": true
+                }
+              ]
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Service name",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#F4F5F5"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Gitea"
+                },
+                "size": 16
+              },
+              "placement": {
+                "top": 10,
+                "left": 72,
+                "width": 170,
+                "height": 26,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Service status",
+              "type": "metric-value",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "field": "Status",
+                  "fixed": "#73BF69"
+                },
+                "text": {
+                  "mode": "field",
+                  "field": "Status",
+                  "fixed": ""
+                },
+                "size": 14
+              },
+              "placement": {
+                "top": 37,
+                "left": 72,
+                "width": 70,
+                "height": 22,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "link",
+              "name": "Native dashboard link",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#8E9BA8"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Open native dashboard →"
+                },
+                "size": 10
+              },
+              "placement": {
+                "top": 61,
+                "left": 72,
+                "width": 165,
+                "height": 18,
+                "rotation": 0
+              },
+              "links": [
+                {
+                  "title": "Open Gitea",
+                  "url": "http://localhost:3000",
+                  "targetBlank": true
+                }
+              ]
+            }
+          ]
         }
       },
       "fieldConfig": {
@@ -464,12 +820,12 @@
         },
         "overrides": []
       },
-      "description": "◆  Gitea health. Click the status to open the native tool."
+      "description": "Gitea service health and native dashboard link"
     },
     {
       "id": 21,
-      "type": "stat",
-      "title": "◉  SonarQube",
+      "type": "canvas",
+      "title": "",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -483,25 +839,191 @@
       "targets": [
         {
           "expr": "max(kube_deployment_status_replicas_available{namespace=\"cloud-emulators\",deployment=\"sonarqube\"})",
-          "refId": "A"
+          "refId": "A",
+          "legendFormat": "Status",
+          "instant": true,
+          "range": false
         }
       ],
       "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value",
-        "text": {
-          "titleSize": 14,
-          "valueSize": 22
+        "inlineEditing": false,
+        "showAdvancedTypes": true,
+        "panZoom": false,
+        "infinitePan": false,
+        "root": {
+          "name": "Service card",
+          "type": "frame",
+          "elements": [
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "link",
+              "name": "Service icon",
+              "type": "icon",
+              "config": {
+                "path": {
+                  "mode": "fixed",
+                  "fixed": "img/platform/sonarqube.svg"
+                },
+                "fill": {
+                  "fixed": "#4E9BCD"
+                }
+              },
+              "placement": {
+                "top": 13,
+                "left": 14,
+                "width": 44,
+                "height": 44,
+                "rotation": 0
+              },
+              "links": [
+                {
+                  "title": "Open SonarQube",
+                  "url": "http://localhost:9000",
+                  "targetBlank": true
+                }
+              ]
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Service name",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#F4F5F5"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "SonarQube"
+                },
+                "size": 16
+              },
+              "placement": {
+                "top": 10,
+                "left": 72,
+                "width": 170,
+                "height": 26,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Service status",
+              "type": "metric-value",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "field": "Status",
+                  "fixed": "#73BF69"
+                },
+                "text": {
+                  "mode": "field",
+                  "field": "Status",
+                  "fixed": ""
+                },
+                "size": 14
+              },
+              "placement": {
+                "top": 37,
+                "left": 72,
+                "width": 70,
+                "height": 22,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "link",
+              "name": "Native dashboard link",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#8E9BA8"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Open native dashboard →"
+                },
+                "size": 10
+              },
+              "placement": {
+                "top": 61,
+                "left": 72,
+                "width": 165,
+                "height": 18,
+                "rotation": 0
+              },
+              "links": [
+                {
+                  "title": "Open SonarQube",
+                  "url": "http://localhost:9000",
+                  "targetBlank": true
+                }
+              ]
+            }
+          ]
         }
       },
       "fieldConfig": {
@@ -547,12 +1069,12 @@
         },
         "overrides": []
       },
-      "description": "◉  SonarQube health. Click the status to open the native tool."
+      "description": "SonarQube service health and native dashboard link"
     },
     {
       "id": 22,
-      "type": "stat",
-      "title": "▣  Registry",
+      "type": "canvas",
+      "title": "",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -566,25 +1088,191 @@
       "targets": [
         {
           "expr": "max(up{job=\"registry\"})",
-          "refId": "A"
+          "refId": "A",
+          "legendFormat": "Status",
+          "instant": true,
+          "range": false
         }
       ],
       "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value",
-        "text": {
-          "titleSize": 14,
-          "valueSize": 22
+        "inlineEditing": false,
+        "showAdvancedTypes": true,
+        "panZoom": false,
+        "infinitePan": false,
+        "root": {
+          "name": "Service card",
+          "type": "frame",
+          "elements": [
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "link",
+              "name": "Service icon",
+              "type": "icon",
+              "config": {
+                "path": {
+                  "mode": "fixed",
+                  "fixed": "img/platform/registry.svg"
+                },
+                "fill": {
+                  "fixed": "#56A64B"
+                }
+              },
+              "placement": {
+                "top": 13,
+                "left": 14,
+                "width": 44,
+                "height": 44,
+                "rotation": 0
+              },
+              "links": [
+                {
+                  "title": "Open Registry",
+                  "url": "http://localhost:5001",
+                  "targetBlank": true
+                }
+              ]
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Service name",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#F4F5F5"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Registry"
+                },
+                "size": 16
+              },
+              "placement": {
+                "top": 10,
+                "left": 72,
+                "width": 170,
+                "height": 26,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Service status",
+              "type": "metric-value",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "field": "Status",
+                  "fixed": "#73BF69"
+                },
+                "text": {
+                  "mode": "field",
+                  "field": "Status",
+                  "fixed": ""
+                },
+                "size": 14
+              },
+              "placement": {
+                "top": 37,
+                "left": 72,
+                "width": 70,
+                "height": 22,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "link",
+              "name": "Native dashboard link",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#8E9BA8"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Open native dashboard →"
+                },
+                "size": 10
+              },
+              "placement": {
+                "top": 61,
+                "left": 72,
+                "width": 165,
+                "height": 18,
+                "rotation": 0
+              },
+              "links": [
+                {
+                  "title": "Open Registry",
+                  "url": "http://localhost:5001",
+                  "targetBlank": true
+                }
+              ]
+            }
+          ]
         }
       },
       "fieldConfig": {
@@ -630,12 +1318,12 @@
         },
         "overrides": []
       },
-      "description": "▣  Registry health. Click the status to open the native tool."
+      "description": "Registry service health and native dashboard link"
     },
     {
       "id": 23,
-      "type": "stat",
-      "title": "🔥  Prometheus",
+      "type": "canvas",
+      "title": "",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -649,25 +1337,191 @@
       "targets": [
         {
           "expr": "max(up{job=\"prometheus\"})",
-          "refId": "A"
+          "refId": "A",
+          "legendFormat": "Status",
+          "instant": true,
+          "range": false
         }
       ],
       "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value",
-        "text": {
-          "titleSize": 14,
-          "valueSize": 22
+        "inlineEditing": false,
+        "showAdvancedTypes": true,
+        "panZoom": false,
+        "infinitePan": false,
+        "root": {
+          "name": "Service card",
+          "type": "frame",
+          "elements": [
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "link",
+              "name": "Service icon",
+              "type": "icon",
+              "config": {
+                "path": {
+                  "mode": "fixed",
+                  "fixed": "img/platform/prometheus.svg"
+                },
+                "fill": {
+                  "fixed": "#E6522C"
+                }
+              },
+              "placement": {
+                "top": 13,
+                "left": 14,
+                "width": 44,
+                "height": 44,
+                "rotation": 0
+              },
+              "links": [
+                {
+                  "title": "Open Prometheus",
+                  "url": "http://localhost:9090",
+                  "targetBlank": true
+                }
+              ]
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Service name",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#F4F5F5"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Prometheus"
+                },
+                "size": 16
+              },
+              "placement": {
+                "top": 10,
+                "left": 72,
+                "width": 170,
+                "height": 26,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Service status",
+              "type": "metric-value",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "field": "Status",
+                  "fixed": "#73BF69"
+                },
+                "text": {
+                  "mode": "field",
+                  "field": "Status",
+                  "fixed": ""
+                },
+                "size": 14
+              },
+              "placement": {
+                "top": 37,
+                "left": 72,
+                "width": 70,
+                "height": 22,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "link",
+              "name": "Native dashboard link",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#8E9BA8"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Open native dashboard →"
+                },
+                "size": 10
+              },
+              "placement": {
+                "top": 61,
+                "left": 72,
+                "width": 165,
+                "height": 18,
+                "rotation": 0
+              },
+              "links": [
+                {
+                  "title": "Open Prometheus",
+                  "url": "http://localhost:9090",
+                  "targetBlank": true
+                }
+              ]
+            }
+          ]
         }
       },
       "fieldConfig": {
@@ -713,12 +1567,12 @@
         },
         "overrides": []
       },
-      "description": "🔥  Prometheus health. Click the status to open the native tool."
+      "description": "Prometheus service health and native dashboard link"
     },
     {
       "id": 24,
-      "type": "stat",
-      "title": "◌  Grafana",
+      "type": "canvas",
+      "title": "",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -732,25 +1586,191 @@
       "targets": [
         {
           "expr": "max(kube_deployment_status_replicas_available{namespace=\"observability\",deployment=\"grafana\"})",
-          "refId": "A"
+          "refId": "A",
+          "legendFormat": "Status",
+          "instant": true,
+          "range": false
         }
       ],
       "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value",
-        "text": {
-          "titleSize": 14,
-          "valueSize": 22
+        "inlineEditing": false,
+        "showAdvancedTypes": true,
+        "panZoom": false,
+        "infinitePan": false,
+        "root": {
+          "name": "Service card",
+          "type": "frame",
+          "elements": [
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "link",
+              "name": "Service icon",
+              "type": "icon",
+              "config": {
+                "path": {
+                  "mode": "fixed",
+                  "fixed": "img/platform/grafana.svg"
+                },
+                "fill": {
+                  "fixed": "#F46800"
+                }
+              },
+              "placement": {
+                "top": 13,
+                "left": 14,
+                "width": 44,
+                "height": 44,
+                "rotation": 0
+              },
+              "links": [
+                {
+                  "title": "Open Grafana",
+                  "url": "http://localhost:3001",
+                  "targetBlank": true
+                }
+              ]
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Service name",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#F4F5F5"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Grafana"
+                },
+                "size": 16
+              },
+              "placement": {
+                "top": 10,
+                "left": 72,
+                "width": 170,
+                "height": 26,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Service status",
+              "type": "metric-value",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "field": "Status",
+                  "fixed": "#73BF69"
+                },
+                "text": {
+                  "mode": "field",
+                  "field": "Status",
+                  "fixed": ""
+                },
+                "size": 14
+              },
+              "placement": {
+                "top": 37,
+                "left": 72,
+                "width": 70,
+                "height": 22,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "link",
+              "name": "Native dashboard link",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#8E9BA8"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Open native dashboard →"
+                },
+                "size": 10
+              },
+              "placement": {
+                "top": 61,
+                "left": 72,
+                "width": 165,
+                "height": 18,
+                "rotation": 0
+              },
+              "links": [
+                {
+                  "title": "Open Grafana",
+                  "url": "http://localhost:3001",
+                  "targetBlank": true
+                }
+              ]
+            }
+          ]
         }
       },
       "fieldConfig": {
@@ -796,12 +1816,12 @@
         },
         "overrides": []
       },
-      "description": "◌  Grafana health. Click the status to open the native tool."
+      "description": "Grafana service health and native dashboard link"
     },
     {
       "id": 25,
-      "type": "stat",
-      "title": "🔔  Alertmanager",
+      "type": "canvas",
+      "title": "",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -815,25 +1835,191 @@
       "targets": [
         {
           "expr": "max(up{job=\"alertmanager\"})",
-          "refId": "A"
+          "refId": "A",
+          "legendFormat": "Status",
+          "instant": true,
+          "range": false
         }
       ],
       "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value",
-        "text": {
-          "titleSize": 14,
-          "valueSize": 22
+        "inlineEditing": false,
+        "showAdvancedTypes": true,
+        "panZoom": false,
+        "infinitePan": false,
+        "root": {
+          "name": "Service card",
+          "type": "frame",
+          "elements": [
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "link",
+              "name": "Service icon",
+              "type": "icon",
+              "config": {
+                "path": {
+                  "mode": "fixed",
+                  "fixed": "img/platform/alertmanager.svg"
+                },
+                "fill": {
+                  "fixed": "#FF780A"
+                }
+              },
+              "placement": {
+                "top": 13,
+                "left": 14,
+                "width": 44,
+                "height": 44,
+                "rotation": 0
+              },
+              "links": [
+                {
+                  "title": "Open Alertmanager",
+                  "url": "http://localhost:9093",
+                  "targetBlank": true
+                }
+              ]
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Service name",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#F4F5F5"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Alertmanager"
+                },
+                "size": 16
+              },
+              "placement": {
+                "top": 10,
+                "left": 72,
+                "width": 170,
+                "height": 26,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Service status",
+              "type": "metric-value",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "field": "Status",
+                  "fixed": "#73BF69"
+                },
+                "text": {
+                  "mode": "field",
+                  "field": "Status",
+                  "fixed": ""
+                },
+                "size": 14
+              },
+              "placement": {
+                "top": 37,
+                "left": 72,
+                "width": 70,
+                "height": 22,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "link",
+              "name": "Native dashboard link",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#8E9BA8"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Open native dashboard →"
+                },
+                "size": 10
+              },
+              "placement": {
+                "top": 61,
+                "left": 72,
+                "width": 165,
+                "height": 18,
+                "rotation": 0
+              },
+              "links": [
+                {
+                  "title": "Open Alertmanager",
+                  "url": "http://localhost:9093",
+                  "targetBlank": true
+                }
+              ]
+            }
+          ]
         }
       },
       "fieldConfig": {
@@ -879,12 +2065,12 @@
         },
         "overrides": []
       },
-      "description": "🔔  Alertmanager health. Click the status to open the native tool."
+      "description": "Alertmanager service health and native dashboard link"
     },
     {
       "id": 26,
-      "type": "stat",
-      "title": "▥  Loki",
+      "type": "canvas",
+      "title": "",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -898,25 +2084,191 @@
       "targets": [
         {
           "expr": "max(up{job=\"loki\"})",
-          "refId": "A"
+          "refId": "A",
+          "legendFormat": "Status",
+          "instant": true,
+          "range": false
         }
       ],
       "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value",
-        "text": {
-          "titleSize": 14,
-          "valueSize": 22
+        "inlineEditing": false,
+        "showAdvancedTypes": true,
+        "panZoom": false,
+        "infinitePan": false,
+        "root": {
+          "name": "Service card",
+          "type": "frame",
+          "elements": [
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "link",
+              "name": "Service icon",
+              "type": "icon",
+              "config": {
+                "path": {
+                  "mode": "fixed",
+                  "fixed": "img/platform/loki.svg"
+                },
+                "fill": {
+                  "fixed": "#F2CC0C"
+                }
+              },
+              "placement": {
+                "top": 13,
+                "left": 14,
+                "width": 44,
+                "height": 44,
+                "rotation": 0
+              },
+              "links": [
+                {
+                  "title": "Open Loki",
+                  "url": "http://localhost:3100",
+                  "targetBlank": true
+                }
+              ]
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Service name",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#F4F5F5"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Loki"
+                },
+                "size": 16
+              },
+              "placement": {
+                "top": 10,
+                "left": 72,
+                "width": 170,
+                "height": 26,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Service status",
+              "type": "metric-value",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "field": "Status",
+                  "fixed": "#73BF69"
+                },
+                "text": {
+                  "mode": "field",
+                  "field": "Status",
+                  "fixed": ""
+                },
+                "size": 14
+              },
+              "placement": {
+                "top": 37,
+                "left": 72,
+                "width": 70,
+                "height": 22,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "link",
+              "name": "Native dashboard link",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#8E9BA8"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Open native dashboard →"
+                },
+                "size": 10
+              },
+              "placement": {
+                "top": 61,
+                "left": 72,
+                "width": 165,
+                "height": 18,
+                "rotation": 0
+              },
+              "links": [
+                {
+                  "title": "Open Loki",
+                  "url": "http://localhost:3100",
+                  "targetBlank": true
+                }
+              ]
+            }
+          ]
         }
       },
       "fieldConfig": {
@@ -962,12 +2314,12 @@
         },
         "overrides": []
       },
-      "description": "▥  Loki health. Click the status to open the native tool."
+      "description": "Loki service health and native dashboard link"
     },
     {
       "id": 27,
-      "type": "stat",
-      "title": "🔨  Tempo",
+      "type": "canvas",
+      "title": "",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -981,25 +2333,191 @@
       "targets": [
         {
           "expr": "max(kube_deployment_status_replicas_available{namespace=\"observability\",deployment=\"tempo\"})",
-          "refId": "A"
+          "refId": "A",
+          "legendFormat": "Status",
+          "instant": true,
+          "range": false
         }
       ],
       "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value",
-        "text": {
-          "titleSize": 14,
-          "valueSize": 22
+        "inlineEditing": false,
+        "showAdvancedTypes": true,
+        "panZoom": false,
+        "infinitePan": false,
+        "root": {
+          "name": "Service card",
+          "type": "frame",
+          "elements": [
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "link",
+              "name": "Service icon",
+              "type": "icon",
+              "config": {
+                "path": {
+                  "mode": "fixed",
+                  "fixed": "img/platform/tempo.svg"
+                },
+                "fill": {
+                  "fixed": "#FFB357"
+                }
+              },
+              "placement": {
+                "top": 13,
+                "left": 14,
+                "width": 44,
+                "height": 44,
+                "rotation": 0
+              },
+              "links": [
+                {
+                  "title": "Open Tempo",
+                  "url": "http://localhost:3200",
+                  "targetBlank": true
+                }
+              ]
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Service name",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#F4F5F5"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Tempo"
+                },
+                "size": 16
+              },
+              "placement": {
+                "top": 10,
+                "left": 72,
+                "width": 170,
+                "height": 26,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Service status",
+              "type": "metric-value",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "field": "Status",
+                  "fixed": "#73BF69"
+                },
+                "text": {
+                  "mode": "field",
+                  "field": "Status",
+                  "fixed": ""
+                },
+                "size": 14
+              },
+              "placement": {
+                "top": 37,
+                "left": 72,
+                "width": 70,
+                "height": 22,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "link",
+              "name": "Native dashboard link",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#8E9BA8"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Open native dashboard →"
+                },
+                "size": 10
+              },
+              "placement": {
+                "top": 61,
+                "left": 72,
+                "width": 165,
+                "height": 18,
+                "rotation": 0
+              },
+              "links": [
+                {
+                  "title": "Open Tempo",
+                  "url": "http://localhost:3200",
+                  "targetBlank": true
+                }
+              ]
+            }
+          ]
         }
       },
       "fieldConfig": {
@@ -1045,12 +2563,12 @@
         },
         "overrides": []
       },
-      "description": "🔨  Tempo health. Click the status to open the native tool."
+      "description": "Tempo service health and native dashboard link"
     },
     {
       "id": 28,
-      "type": "stat",
-      "title": "↗  OpenTelemetry",
+      "type": "canvas",
+      "title": "",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -1064,25 +2582,191 @@
       "targets": [
         {
           "expr": "max(up{job=\"otel-collector\"})",
-          "refId": "A"
+          "refId": "A",
+          "legendFormat": "Status",
+          "instant": true,
+          "range": false
         }
       ],
       "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value",
-        "text": {
-          "titleSize": 14,
-          "valueSize": 22
+        "inlineEditing": false,
+        "showAdvancedTypes": true,
+        "panZoom": false,
+        "infinitePan": false,
+        "root": {
+          "name": "Service card",
+          "type": "frame",
+          "elements": [
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "link",
+              "name": "Service icon",
+              "type": "icon",
+              "config": {
+                "path": {
+                  "mode": "fixed",
+                  "fixed": "img/platform/opentelemetry.svg"
+                },
+                "fill": {
+                  "fixed": "#425CC7"
+                }
+              },
+              "placement": {
+                "top": 13,
+                "left": 14,
+                "width": 44,
+                "height": 44,
+                "rotation": 0
+              },
+              "links": [
+                {
+                  "title": "Open OpenTelemetry",
+                  "url": "http://localhost:8889",
+                  "targetBlank": true
+                }
+              ]
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Service name",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#F4F5F5"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "OpenTelemetry"
+                },
+                "size": 16
+              },
+              "placement": {
+                "top": 10,
+                "left": 72,
+                "width": 170,
+                "height": 26,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Service status",
+              "type": "metric-value",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "field": "Status",
+                  "fixed": "#73BF69"
+                },
+                "text": {
+                  "mode": "field",
+                  "field": "Status",
+                  "fixed": ""
+                },
+                "size": 14
+              },
+              "placement": {
+                "top": 37,
+                "left": 72,
+                "width": 70,
+                "height": 22,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "link",
+              "name": "Native dashboard link",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#8E9BA8"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Open native dashboard →"
+                },
+                "size": 10
+              },
+              "placement": {
+                "top": 61,
+                "left": 72,
+                "width": 165,
+                "height": 18,
+                "rotation": 0
+              },
+              "links": [
+                {
+                  "title": "Open OpenTelemetry",
+                  "url": "http://localhost:8889",
+                  "targetBlank": true
+                }
+              ]
+            }
+          ]
         }
       },
       "fieldConfig": {
@@ -1128,12 +2812,12 @@
         },
         "overrides": []
       },
-      "description": "↗  OpenTelemetry health. Click the status to open the native tool."
+      "description": "OpenTelemetry service health and native dashboard link"
     },
     {
       "id": 29,
-      "type": "stat",
-      "title": "⬡  Full-stack Demo",
+      "type": "canvas",
+      "title": "",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -1147,25 +2831,191 @@
       "targets": [
         {
           "expr": "max(up{job=\"junior-fullstack-demo\"})",
-          "refId": "A"
+          "refId": "A",
+          "legendFormat": "Status",
+          "instant": true,
+          "range": false
         }
       ],
       "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value",
-        "text": {
-          "titleSize": 14,
-          "valueSize": 22
+        "inlineEditing": false,
+        "showAdvancedTypes": true,
+        "panZoom": false,
+        "infinitePan": false,
+        "root": {
+          "name": "Service card",
+          "type": "frame",
+          "elements": [
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "link",
+              "name": "Service icon",
+              "type": "icon",
+              "config": {
+                "path": {
+                  "mode": "fixed",
+                  "fixed": "img/platform/fullstack.svg"
+                },
+                "fill": {
+                  "fixed": "#73BF69"
+                }
+              },
+              "placement": {
+                "top": 13,
+                "left": 14,
+                "width": 44,
+                "height": 44,
+                "rotation": 0
+              },
+              "links": [
+                {
+                  "title": "Open Full-stack Demo",
+                  "url": "http://localhost:8080",
+                  "targetBlank": true
+                }
+              ]
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Service name",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#F4F5F5"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Full-stack Demo"
+                },
+                "size": 16
+              },
+              "placement": {
+                "top": 10,
+                "left": 72,
+                "width": 170,
+                "height": 26,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Service status",
+              "type": "metric-value",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "field": "Status",
+                  "fixed": "#73BF69"
+                },
+                "text": {
+                  "mode": "field",
+                  "field": "Status",
+                  "fixed": ""
+                },
+                "size": 14
+              },
+              "placement": {
+                "top": 37,
+                "left": 72,
+                "width": 70,
+                "height": 22,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "link",
+              "name": "Native dashboard link",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#8E9BA8"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Open native dashboard →"
+                },
+                "size": 10
+              },
+              "placement": {
+                "top": 61,
+                "left": 72,
+                "width": 165,
+                "height": 18,
+                "rotation": 0
+              },
+              "links": [
+                {
+                  "title": "Open Full-stack Demo",
+                  "url": "http://localhost:8080",
+                  "targetBlank": true
+                }
+              ]
+            }
+          ]
         }
       },
       "fieldConfig": {
@@ -1211,12 +3061,12 @@
         },
         "overrides": []
       },
-      "description": "⬡  Full-stack Demo health. Click the status to open the native tool."
+      "description": "Full-stack Demo service health and native dashboard link"
     },
     {
       "id": 30,
-      "type": "stat",
-      "title": "◇  Kubernetes State",
+      "type": "canvas",
+      "title": "",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -1230,25 +3080,191 @@
       "targets": [
         {
           "expr": "max(up{job=\"kube-state-metrics\"})",
-          "refId": "A"
+          "refId": "A",
+          "legendFormat": "Status",
+          "instant": true,
+          "range": false
         }
       ],
       "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value",
-        "text": {
-          "titleSize": 14,
-          "valueSize": 22
+        "inlineEditing": false,
+        "showAdvancedTypes": true,
+        "panZoom": false,
+        "infinitePan": false,
+        "root": {
+          "name": "Service card",
+          "type": "frame",
+          "elements": [
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "link",
+              "name": "Service icon",
+              "type": "icon",
+              "config": {
+                "path": {
+                  "mode": "fixed",
+                  "fixed": "img/platform/kubernetes.svg"
+                },
+                "fill": {
+                  "fixed": "#326CE5"
+                }
+              },
+              "placement": {
+                "top": 13,
+                "left": 14,
+                "width": 44,
+                "height": 44,
+                "rotation": 0
+              },
+              "links": [
+                {
+                  "title": "Open Kubernetes State",
+                  "url": "http://localhost:9090/targets",
+                  "targetBlank": true
+                }
+              ]
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Service name",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#F4F5F5"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Kubernetes State"
+                },
+                "size": 16
+              },
+              "placement": {
+                "top": 10,
+                "left": 72,
+                "width": 170,
+                "height": 26,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Service status",
+              "type": "metric-value",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "field": "Status",
+                  "fixed": "#73BF69"
+                },
+                "text": {
+                  "mode": "field",
+                  "field": "Status",
+                  "fixed": ""
+                },
+                "size": 14
+              },
+              "placement": {
+                "top": 37,
+                "left": 72,
+                "width": 70,
+                "height": 22,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "link",
+              "name": "Native dashboard link",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#8E9BA8"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Open native dashboard →"
+                },
+                "size": 10
+              },
+              "placement": {
+                "top": 61,
+                "left": 72,
+                "width": 165,
+                "height": 18,
+                "rotation": 0
+              },
+              "links": [
+                {
+                  "title": "Open Kubernetes State",
+                  "url": "http://localhost:9090/targets",
+                  "targetBlank": true
+                }
+              ]
+            }
+          ]
         }
       },
       "fieldConfig": {
@@ -1294,12 +3310,12 @@
         },
         "overrides": []
       },
-      "description": "◇  Kubernetes State health. Click the status to open the native tool."
+      "description": "Kubernetes State service health and native dashboard link"
     },
     {
       "id": 31,
-      "type": "stat",
-      "title": "▦  Node Exporter",
+      "type": "canvas",
+      "title": "",
       "gridPos": {
         "h": 4,
         "w": 4,
@@ -1313,25 +3329,191 @@
       "targets": [
         {
           "expr": "max(up{job=\"node-exporter\"})",
-          "refId": "A"
+          "refId": "A",
+          "legendFormat": "Status",
+          "instant": true,
+          "range": false
         }
       ],
       "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "value",
-        "text": {
-          "titleSize": 14,
-          "valueSize": 22
+        "inlineEditing": false,
+        "showAdvancedTypes": true,
+        "panZoom": false,
+        "infinitePan": false,
+        "root": {
+          "name": "Service card",
+          "type": "frame",
+          "elements": [
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "link",
+              "name": "Service icon",
+              "type": "icon",
+              "config": {
+                "path": {
+                  "mode": "fixed",
+                  "fixed": "img/platform/node-exporter.svg"
+                },
+                "fill": {
+                  "fixed": "#56A64B"
+                }
+              },
+              "placement": {
+                "top": 13,
+                "left": 14,
+                "width": 44,
+                "height": 44,
+                "rotation": 0
+              },
+              "links": [
+                {
+                  "title": "Open Node Exporter",
+                  "url": "http://localhost:9090/targets",
+                  "targetBlank": true
+                }
+              ]
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Service name",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#F4F5F5"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Node Exporter"
+                },
+                "size": 16
+              },
+              "placement": {
+                "top": 10,
+                "left": 72,
+                "width": 170,
+                "height": 26,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "off",
+              "name": "Service status",
+              "type": "metric-value",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "field": "Status",
+                  "fixed": "#73BF69"
+                },
+                "text": {
+                  "mode": "field",
+                  "field": "Status",
+                  "fixed": ""
+                },
+                "size": 14
+              },
+              "placement": {
+                "top": 37,
+                "left": 72,
+                "width": 70,
+                "height": 22,
+                "rotation": 0
+              }
+            },
+            {
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "width": 0
+              },
+              "oneClickMode": "link",
+              "name": "Native dashboard link",
+              "type": "text",
+              "config": {
+                "align": "left",
+                "valign": "middle",
+                "color": {
+                  "fixed": "#8E9BA8"
+                },
+                "text": {
+                  "mode": "fixed",
+                  "fixed": "Open native dashboard →"
+                },
+                "size": 10
+              },
+              "placement": {
+                "top": 61,
+                "left": 72,
+                "width": 165,
+                "height": 18,
+                "rotation": 0
+              },
+              "links": [
+                {
+                  "title": "Open Node Exporter",
+                  "url": "http://localhost:9090/targets",
+                  "targetBlank": true
+                }
+              ]
+            }
+          ]
         }
       },
       "fieldConfig": {
@@ -1377,7 +3559,7 @@
         },
         "overrides": []
       },
-      "description": "▦  Node Exporter health. Click the status to open the native tool."
+      "description": "Node Exporter service health and native dashboard link"
     },
     {
       "id": 32,
@@ -1875,7 +4057,7 @@
   "timezone": "browser",
   "title": "Platform Operations",
   "uid": "platform-ops-overview",
-  "version": 3,
+  "version": 5,
   "weekStart": "",
   "style": "dark",
   "description": "Incident-first operations view for the standalone Kubernetes development platform. Service glyphs identify each native tool; select a card or drill-down link for details."

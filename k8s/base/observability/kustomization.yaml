@@ -17,5 +17,21 @@ configMapGenerator:
     files:
       - provider.yml=grafana/provider.yml
       - platform-operations.json=grafana/platform-operations.json
+  - name: grafana-platform-icons
+    namespace: observability
+    files:
+      - grafana/icons/gitea.svg
+      - grafana/icons/sonarqube.svg
+      - grafana/icons/registry.svg
+      - grafana/icons/prometheus.svg
+      - grafana/icons/grafana.svg
+      - grafana/icons/alertmanager.svg
+      - grafana/icons/loki.svg
+      - grafana/icons/tempo.svg
+      - grafana/icons/opentelemetry.svg
+      - grafana/icons/fullstack.svg
+      - grafana/icons/kubernetes.svg
+      - grafana/icons/node-exporter.svg
+      - grafana/icons/shield-check.svg
 generatorOptions:
   disableNameSuffixHash: true

@@ -139,6 +139,7 @@ spec:
             - {name: provisioning, mountPath: /etc/grafana/provisioning/datasources, readOnly: true}
             - {name: dashboard-provider, mountPath: /etc/grafana/provisioning/dashboards, readOnly: true}
             - {name: platform-dashboard, mountPath: /var/lib/grafana/provisioned, readOnly: true}
+            - {name: platform-icons, mountPath: /usr/share/grafana/public/img/platform, readOnly: true}
             - {name: tmp, mountPath: /tmp}
       volumes:
         - name: data
@@ -153,6 +154,8 @@ spec:
           configMap:
             name: grafana-platform-dashboard
             items: [{key: platform-operations.json, path: platform-operations.json}]
+        - name: platform-icons
+          configMap: {name: grafana-platform-icons}
         - name: tmp
           emptyDir: {sizeLimit: 64Mi}
       terminationGracePeriodSeconds: 30
