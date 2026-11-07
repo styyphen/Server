@@ -1,0 +1,13 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: react-template
+  title: react
+  description: Paved-road skeleton for a new React UI.
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+spec:
+  type: library
+  lifecycle: production
+  owner: group:default/platform-operators
+  system: local-development-platform

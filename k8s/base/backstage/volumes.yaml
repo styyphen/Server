@@ -1,0 +1,49 @@
+# Pod Security baseline rejects hostPath on a pod. These static volumes
+# keep the catalog files at the same paths the app config uses.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: backstage-platform-repo
+spec:
+  capacity: {storage: 1Gi}
+  accessModes: [ReadOnlyMany]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: backstage-host
+  hostPath:
+    path: /mnt/dev/Server
+    type: Directory
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backstage-platform-repo
+spec:
+  accessModes: [ReadOnlyMany]
+  storageClassName: backstage-host
+  volumeName: backstage-platform-repo
+  resources:
+    requests: {storage: 1Gi}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: backstage-app-catalog
+spec:
+  capacity: {storage: 1Mi}
+  accessModes: [ReadOnlyMany]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: backstage-host
+  hostPath:
+    path: /mnt/dev/backstage/catalog-info.yaml
+    type: File
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backstage-app-catalog
+spec:
+  accessModes: [ReadOnlyMany]
+  storageClassName: backstage-host
+  volumeName: backstage-app-catalog
+  resources:
+    requests: {storage: 1Mi}

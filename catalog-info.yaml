@@ -1,0 +1,31 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: local-development-platform-catalog
+  description: Location list for the single-node k3s platform
+spec:
+  targets:
+    - ./catalog/components.yaml
+    - ./localCICD/repo-templates/dotnet-api-template/catalog-info.yaml
+    - ./localCICD/repo-templates/node-api-template/catalog-info.yaml
+    - ./localCICD/repo-templates/react-template/catalog-info.yaml
+    - ./localCICD/repo-templates/worker-service-template/catalog-info.yaml
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: local-development-platform
+  description: Single-node k3s platform for source, images, CI, observability, and local models.
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+spec:
+  owner: group:default/platform-operators
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: platform-operators
+  description: Operator of this k3s server.
+spec:
+  type: team
+  children: []

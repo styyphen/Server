@@ -30,6 +30,8 @@ The monitoring menu asks whether the browser is on an SSH client, prints the exa
 
 This directory implements the standalone K3s server described by the
 [single-server plan](../docs/local-kubernetes-single-server-plan.md).
+The product rules for new services are in the
+[platform contract](platform-contract.md).
 
 
 ## Install K3s

@@ -1,0 +1,7 @@
+site_name: react template
+docs_dir: docs
+nav:
+  - Architecture: architecture.md
+  - Runbook: runbook.md
+plugins:
+  - techdocs-core
