@@ -1,6 +1,6 @@
 # Current Kubernetes architecture
 
-Last verified: 2026-07-30 (UTC)
+Last verified: 2026-11-07 (UTC)
 
 ## Overview
 
@@ -10,10 +10,10 @@ physical Ubuntu server. There is no Hyper-V or other virtual-machine layer.
 | Component | Current configuration |
 |---|---|
 | Hardware | Micro-Star International `MS-7C89` physical desktop |
-| Operating system | Ubuntu 24.04.4 LTS, Linux 6.8.0-136-generic |
+| Operating system | Ubuntu 24.04.4 LTS, Linux 6.8.0-146-generic |
 | Virtualization | None detected |
 | Kubernetes node | `k3s-server`, control plane and worker |
-| Node address | `192.168.68.59` |
+| Node address | `192.168.68.54` (DHCP on `eno1`, MAC `2c:f0:5d:82:58:d4`) |
 | Kubernetes distribution | K3s `v1.36.1+k3s1` |
 | Container runtime | containerd `2.2.3-k3s1` |
 | Ingress | Bundled Traefik with K3s ServiceLB on ports 80 and 443 |
@@ -27,7 +27,7 @@ physical Ubuntu server. There is no Hyper-V or other virtual-machine layer.
 flowchart TB
     Users["LAN clients and developers"]
 
-    subgraph Host["Physical MSI server - 192.168.68.59"]
+    subgraph Host["Physical MSI server - 192.168.68.54"]
         Ubuntu["Ubuntu 24.04.4 LTS<br/>No virtualization"]
         K3s["Single-node K3s v1.36.1<br/>Control plane and worker<br/>containerd"]
         Disk["Local server disk<br/>local-path StorageClass"]
@@ -52,6 +52,7 @@ flowchart TB
     Traefik -->|"registry.dev.home.arpa"| Registry
     Traefik -->|"grafana.dev.home.arpa"| Grafana
     Traefik -->|"demo.dev.home.arpa"| Demo
+    Traefik -->|"ollama.dev.home.arpa"| Ollama
 
     subgraph Platform["platform-system"]
         Gitea["Gitea<br/>StatefulSet - 1 replica"]
@@ -78,6 +79,10 @@ flowchart TB
 
     subgraph Apps["demo-apps"]
         Demo["Junior full-stack demo<br/>Deployment - 1 replica"]
+    end
+
+    subgraph LLM["llm"]
+        Ollama["Ollama<br/>Deployment - 1 replica<br/>NodePort 31134"]
     end
 
     Demo -->|"Telemetry"| OTel
@@ -123,7 +128,8 @@ flowchart TB
 | `ci-jobs` | Pipeline execution | One Gitea runner plus short-lived Kubernetes Jobs |
 | `observability` | Metrics, logs, traces and dashboards | Grafana, Prometheus, Alertmanager, Loki, Tempo, OpenTelemetry Collector and kube-state-metrics |
 | `cloud-emulators` | Code analysis and cloud emulation | SonarQube and PostgreSQL running; Azurite, Fake GCS and LocalStack scaled to zero |
-| `demo-apps` | Sample applications | Junior full-stack demo, one replica |
+| `demo-apps` | Sample applications | Junior full-stack demo, one replica, image tag `79e60dbe57f1` |
+| `llm` | Local model serving | Ollama, one replica, model volume 50 GiB, NodePort `31134` |
 | `default` | Kubernetes default | No application workloads |
 
 ## Network entry points
@@ -134,7 +140,9 @@ flowchart TB
 | `https://registry.dev.home.arpa` | OCI Registry | TLS through Traefik |
 | `https://grafana.dev.home.arpa` | Grafana | TLS through Traefik |
 | `http://demo.dev.home.arpa` | Junior full-stack demo | HTTP through Traefik |
-| `192.168.68.59:32222` | Gitea SSH | NodePort |
+| `http://ollama.dev.home.arpa` | Ollama | HTTP through Traefik |
+| `192.168.68.54:31134` | Ollama | NodePort |
+| `192.168.68.54:32222` | Gitea SSH | NodePort |
 
 Prometheus, Alertmanager, Loki, Tempo, OpenTelemetry and SonarQube use
 ClusterIP services. Operators normally reach them using loopback-only
@@ -161,8 +169,9 @@ stored on the physical server and is not replicated.
 | `cloud-emulators` | SonarQube data, extensions and logs | 5 GiB total | Bound |
 | `cloud-emulators` | SonarQube PostgreSQL data | 5 GiB | Bound |
 | `cloud-emulators` | Azurite, Fake GCS and LocalStack data | Deferred | Pending while workloads are scaled to zero |
+| `llm` | Ollama models | 50 GiB | Bound |
 
-The live bound capacity at verification time was 69 GiB.
+The live bound capacity at verification time was 120 GiB. Platform names in `/etc/hosts` resolve to `192.168.68.54`. `/dev/sda2` is mounted read-write at `/mnt/dev` by the systemd unit `mnt-dev.mount`.
 
 ## Security and resource boundaries
 
@@ -188,6 +197,8 @@ The live bound capacity at verification time was 69 GiB.
   Gitea, the registry, Grafana and Kubernetes objects.
 - Optional emulator workloads are normally kept at zero replicas to preserve
   capacity. SonarQube is currently the only active optional service.
+- Ollama is part of `k8s/overlays/current` through `k8s/base/llm`. kube-state-metrics may egress to TCP 443 and 6443 so it can reach the API server. On 2026-11-07 that policy was applied by itself. A full `kubectl apply -k k8s/overlays/current` would also move `junior-fullstack-demo` from image tag `79e60dbe57f1` back to `bootstrap`.
+- The node address comes from DHCP. Reserve `192.168.68.54` for MAC `2c:f0:5d:82:58:d4` on the router so the hosts file and ingress address stay aligned.
 - The complete desired state is assembled by
   [`k8s/overlays/current/kustomization.yaml`](../k8s/overlays/current/kustomization.yaml).
 - K3s host settings are recorded in
