@@ -1,0 +1,211 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: backstage-postgresql
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: backstage
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backstage-postgresql-data
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backstage-postgresql
+spec:
+  selector:
+    app.kubernetes.io/name: backstage-postgresql
+  ports:
+    - {name: postgresql, port: 5432, targetPort: postgresql}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backstage-postgresql
+spec:
+  replicas: 1
+  strategy: {type: Recreate}
+  selector:
+    matchLabels: {app.kubernetes.io/name: backstage-postgresql}
+  template:
+    metadata:
+      labels: {app.kubernetes.io/name: backstage-postgresql}
+    spec:
+      serviceAccountName: backstage-postgresql
+      automountServiceAccountToken: false
+      securityContext:
+        fsGroup: 999
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: postgresql
+          image: docker.io/library/postgres:16.10-alpine
+          imagePullPolicy: IfNotPresent
+          env:
+            - {name: POSTGRES_DB, value: backstage}
+            - {name: POSTGRES_USER, valueFrom: {secretKeyRef: {name: backstage-database, key: username}}}
+            - {name: POSTGRES_PASSWORD, valueFrom: {secretKeyRef: {name: backstage-database, key: password}}}
+            - {name: PGDATA, value: /var/lib/postgresql/data/pgdata}
+          ports:
+            - {name: postgresql, containerPort: 5432}
+          resources:
+            requests: {cpu: 50m, memory: 256Mi}
+            limits: {cpu: 500m, memory: 512Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+            readOnlyRootFilesystem: true
+          startupProbe:
+            exec: {command: [sh, -c, "pg_isready -U \"$POSTGRES_USER\" -d backstage"]}
+            failureThreshold: 60
+            periodSeconds: 2
+          readinessProbe:
+            exec: {command: [sh, -c, "pg_isready -U \"$POSTGRES_USER\" -d backstage"]}
+            periodSeconds: 10
+          livenessProbe:
+            exec: {command: [sh, -c, "pg_isready -U \"$POSTGRES_USER\" -d backstage"]}
+            periodSeconds: 30
+          volumeMounts:
+            - {name: data, mountPath: /var/lib/postgresql/data}
+            - {name: run, mountPath: /var/run/postgresql}
+            - {name: tmp, mountPath: /tmp}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: backstage-postgresql-data}
+        - name: run
+          emptyDir: {sizeLimit: 16Mi}
+        - name: tmp
+          emptyDir: {sizeLimit: 64Mi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backstage
+spec:
+  selector:
+    app.kubernetes.io/name: backstage
+  ports:
+    - {name: http, port: 7007, targetPort: http}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backstage
+spec:
+  replicas: 1
+  strategy: {type: Recreate}
+  selector:
+    matchLabels: {app.kubernetes.io/name: backstage}
+  template:
+    metadata:
+      labels: {app.kubernetes.io/name: backstage}
+    spec:
+      serviceAccountName: backstage
+      automountServiceAccountToken: false
+      imagePullSecrets: [{name: registry-pull}]
+      securityContext:
+        fsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile: {type: RuntimeDefault}
+      initContainers:
+        # dir: TechDocs prepares the catalog directory in place and rewrites
+        # mkdocs.yml. Copy the repo onto a writable emptyDir so the host
+        # checkout stays read-only.
+        - name: catalog-copy
+          image: registry.dev.home.arpa/backstage:stage3
+          imagePullPolicy: IfNotPresent
+          command: ["sh", "-c", "cp -R /mnt/host/Server/. /mnt/dev/Server/"]
+          resources:
+            requests: {cpu: 25m, memory: 64Mi}
+            limits: {cpu: 250m, memory: 256Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+          volumeMounts:
+            - {name: platform-repo, mountPath: /mnt/host/Server, readOnly: true}
+            - {name: platform-copy, mountPath: /mnt/dev/Server}
+      containers:
+        - name: backstage
+          image: registry.dev.home.arpa/backstage:stage3
+          imagePullPolicy: Always
+          ports:
+            - {name: http, containerPort: 7007}
+          env:
+            - {name: POSTGRES_HOST, value: backstage-postgresql}
+            - {name: POSTGRES_PORT, value: "5432"}
+            - {name: POSTGRES_USER, valueFrom: {secretKeyRef: {name: backstage-database, key: username}}}
+            - {name: POSTGRES_PASSWORD, valueFrom: {secretKeyRef: {name: backstage-database, key: password}}}
+            - {name: BACKEND_SECRET, valueFrom: {secretKeyRef: {name: backstage-backend, key: secret}}}
+            - {name: NODE_ENV, value: production}
+          resources:
+            requests: {cpu: 100m, memory: 512Mi}
+            limits: {cpu: "1", memory: 1536Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+          startupProbe:
+            httpGet: {path: /.backstage/health/v1/readiness, port: http}
+            failureThreshold: 36
+            periodSeconds: 5
+          readinessProbe:
+            httpGet: {path: /.backstage/health/v1/readiness, port: http}
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: {path: /.backstage/health/v1/liveness, port: http}
+            periodSeconds: 30
+          volumeMounts:
+            - {name: platform-copy, mountPath: /mnt/dev/Server}
+            - {name: app-catalog, mountPath: /mnt/dev/backstage/catalog-info.yaml, readOnly: true}
+            - {name: tmp, mountPath: /tmp}
+            - {name: techdocs, mountPath: /var/backstage/techdocs}
+      volumes:
+        # Static hostPath volumes are PVs, not pod hostPath mounts.
+        # Baseline Pod Security rejects hostPath on the pod.
+        - name: platform-repo
+          persistentVolumeClaim: {claimName: backstage-platform-repo, readOnly: true}
+        - name: platform-copy
+          emptyDir: {sizeLimit: 64Mi}
+        - name: app-catalog
+          persistentVolumeClaim: {claimName: backstage-app-catalog, readOnly: true}
+        - name: tmp
+          emptyDir: {sizeLimit: 512Mi}
+        - name: techdocs
+          emptyDir: {sizeLimit: 256Mi}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backstage
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts: [backstage.dev.home.arpa]
+      secretName: backstage-tls
+  rules:
+    - host: backstage.dev.home.arpa
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: backstage
+                port:
+                  name: http

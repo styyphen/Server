@@ -1,0 +1,14 @@
+site_name: Local development platform
+docs_dir: .
+exclude_docs: |
+  localCICD/**
+  examples/**
+  samples/**
+  src/**
+nav:
+  - Contract: k8s/platform-contract.md
+  - Kubernetes platform: k8s/README.md
+  - Architecture: docs/current-kubernetes-architecture.md
+  - Onboarding: docs/onboarding-new-project.md
+plugins:
+  - techdocs-core

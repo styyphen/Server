@@ -1,0 +1,130 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: gitea
+  description: Git server for app source and pull requests.
+  links:
+    - url: https://gitea.dev.home.arpa
+      title: Gitea
+  annotations:
+    backstage.io/kubernetes-namespace: platform-system
+    backstage.io/kubernetes-label-selector: app.kubernetes.io/name=gitea
+spec:
+  type: service
+  lifecycle: production
+  owner: group:default/platform-operators
+  system: local-development-platform
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: registry
+  description: Local OCI registry.
+  links:
+    - url: https://registry.dev.home.arpa
+      title: Registry
+  annotations:
+    backstage.io/kubernetes-namespace: platform-system
+    backstage.io/kubernetes-label-selector: app.kubernetes.io/name=registry
+spec:
+  type: service
+  lifecycle: production
+  owner: group:default/platform-operators
+  system: local-development-platform
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: grafana
+  description: Dashboards for logs, metrics, and traces.
+  links:
+    - url: https://grafana.dev.home.arpa
+      title: Grafana
+  annotations:
+    backstage.io/kubernetes-namespace: observability
+    backstage.io/kubernetes-label-selector: app.kubernetes.io/name=grafana
+spec:
+  type: website
+  lifecycle: production
+  owner: group:default/platform-operators
+  system: local-development-platform
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ollama
+  description: Local model server. NodePort 31134 and http://ollama.dev.home.arpa.
+  links:
+    - url: http://ollama.dev.home.arpa
+      title: Ollama
+  annotations:
+    backstage.io/kubernetes-namespace: llm
+    backstage.io/kubernetes-label-selector: app=ollama
+spec:
+  type: service
+  lifecycle: production
+  owner: group:default/platform-operators
+  system: local-development-platform
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: junior-fullstack-demo
+  description: >
+    Running demo in namespace demo-apps, image tag 79e60dbe57f1.
+    Gitea has no public repository developer-admin/junior-fullstack-demo, so this
+    entity is stored in the platform catalog until that source repo is available.
+  links:
+    - url: http://demo.dev.home.arpa
+      title: Demo
+  annotations:
+    backstage.io/kubernetes-namespace: demo-apps
+    backstage.io/kubernetes-label-selector: app.kubernetes.io/name=junior-fullstack-demo
+spec:
+  type: service
+  lifecycle: experimental
+  owner: group:default/platform-operators
+  system: local-development-platform
+  providesApis:
+    - junior-fullstack-demo
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: junior-fullstack-demo
+  description: HTTP API served by the junior full-stack demo.
+spec:
+  type: openapi
+  lifecycle: experimental
+  owner: group:default/platform-operators
+  system: local-development-platform
+  definition: |
+    openapi: 3.0.3
+    info:
+      title: junior-fullstack-demo
+      version: 79e60dbe57f1
+    paths:
+      /api/health:
+        get:
+          operationId: health
+          responses:
+            "200":
+              description: Process is up. Body includes status and version.
+      /api/greeting:
+        get:
+          operationId: greeting
+          parameters:
+            - name: name
+              in: query
+              required: false
+              schema:
+                type: string
+          responses:
+            "200":
+              description: Greeting that includes the name and the release version.
+      /metrics:
+        get:
+          operationId: metrics
+          responses:
+            "200":
+              description: Prometheus text metrics.

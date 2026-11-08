@@ -4,7 +4,7 @@ Reusable Docker-based observability for local development, now running as a sing
 
 ## Execution plan
 
-Status: Stage 0 retested and Stage 1 written on 2026-11-07. Backstage is not installed.
+Status: Stages 0 through 3 are done on 2026-11-07. Backstage is deployed at `https://backstage.dev.home.arpa`.
 
 Backstage is an open-source framework for a developer portal. The portal this platform will run uses the three parts described at [backstage.io](https://backstage.io/):
 
@@ -125,6 +125,8 @@ Register what this node already runs. Core catalog discovery targets GitHub, Git
 
 TechDocs reads Markdown beside the code. Point it at `k8s/README.md`, `docs/current-kubernetes-architecture.md`, and each template's `docs/`. Update `docs/onboarding-new-project.md` so the published page matches the cluster endpoint, `otel-collector.observability.svc:4317`, and the Compose localhost instructions stay marked as the workstation path.
 
+Result on 2026-11-07: Stage 1 was still in place (`k8s/platform-contract.md` linked from `k8s/README.md`). `npx @backstage/create-app@latest` created `/mnt/dev/backstage` with Node.js 22.22.0. The generated app pins Yarn 4.13.0. `yarn install` and `yarn tsc` succeeded. `yarn start` served the UI at `http://127.0.0.1:3000` and the backend at `:7007`. A guest token read 15 catalog entities: the platform system and group, Gitea, the registry, Grafana, Ollama, the junior demo and its OpenAPI document, the four paved-road templates, and the Backstage app. The location list is `catalog-info.yaml` in this repo. `developer-admin/junior-fullstack-demo` returns 404 from Gitea without credentials, so that component's `catalog-info` lives in `catalog/components.yaml` until the source repo is available. The Backstage directory is its own git repository and has not been pushed to Gitea. TechDocs `mkdocs.yml` files are in place. A docs build was not run because this host has no `pip` or `python3-venv`. The local `yarn start` process was stopped after the catalog check.
+
 ### Stage 3 — Deploy Backstage into this cluster
 
 Use the shape from the Kubernetes guide, adapted to this platform. Skip the guide's minikube, `hostPath`, and `storageClassName: manual` volume. This node already has the `local-path` StorageClass. Keep secret values out of Git, the same rule as `platform-tls` and `gitea-secrets`.
@@ -142,6 +144,12 @@ Use the shape from the Kubernetes guide, adapted to this platform. Skip the guid
 Build and push the image with the existing registry path (Crane or the Gitea runner, no Docker socket on the runner). Dry-run the overlay before apply. Confirm the other platform pods stay Ready after the new namespace is up.
 
 Exit check: `https://backstage.dev.home.arpa` shows the catalog and a TechDocs page for this repo.
+
+Result on 2026-11-07: Stage 2 was rechecked first. The catalog files and `/mnt/dev/backstage` were in place, no pod was failing, and demo health returned `79e60dbe57f1`. `yarn build:backend` succeeded with Node.js 22.22.0. `Dockerfile.cluster` and `app-config.cluster.yaml` build an image that loads only the cluster config, uses PostgreSQL, allows guest sign-in outside development, and includes `mkdocs` plus `mkdocs-techdocs-core`. A Kaniko job in the `default` namespace pushed `registry.platform-system.svc.cluster.local:5000/backstage:stage3`. The pull name is `registry.dev.home.arpa/backstage:stage3`. Applied with `kubectl apply -k k8s/base/backstage` only. `kubectl apply --dry-run=server -k k8s/overlays/current` succeeded and was not applied. The live demo image stayed `registry.dev.home.arpa/junior-fullstack-demo:79e60dbe57f1`.
+
+The namespace enforces baseline Pod Security. Baseline rejects a pod `hostPath`, so the catalog is two static volumes: the platform repo and the app `catalog-info.yaml`. Postgres is `postgres:16.10-alpine`, one replica, on a 2Gi `local-path` PVC, with the same non-root shape as SonarQube's database. `backstage-database` and `backstage-backend` were created out of band. `backstage-tls` is a copy of `platform-tls`, and `registry-pull` is a copy of the demo pull secret. TechDocs rewrites `mkdocs.yml` in the docs directory, so an init container copies the repo onto a writable emptyDir and the host checkout stays read-only. This server's hosts file includes `backstage.dev.home.arpa` at `192.168.68.54`. The leaf certificate is signed by the Local Development Platform CA and includes that name. This host trusts that CA.
+
+`https://backstage.dev.home.arpa` returned the portal shell titled "Local development platform". A guest session read 16 catalog entities, including the platform system, Gitea, the registry, Grafana, Ollama, the junior demo and its OpenAPI document, the four templates, and Backstage. TechDocs sync for `system:default/local-development-platform` finished with `updated: true`. The published contract page returned HTTP 200 and the title "Contract - Local development platform". Other pods stayed Running or Completed. The Kaniko credential copy in `default` was deleted after the push. Gitea OAuth2 is not set up. Nothing was committed.
 
 ### Stage 4 — Make `/create` the on-ramp
 

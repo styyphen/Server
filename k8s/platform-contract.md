@@ -1,6 +1,6 @@
 # Platform contract
 
-Status: written 2026-11-07, after Stage 0 was retested. This page is the product. Backstage templates and scorecards will enforce it. No Backstage code exists yet.
+Status: written 2026-11-07, after Stage 0 was retested. This page is the product. Backstage templates and scorecards will enforce it. The Backstage app is a separate repository at `/mnt/dev/backstage` and is deployed at `https://backstage.dev.home.arpa`.
 
 The runtime is the single-node k3s cluster in [the architecture doc](../docs/current-kubernetes-architecture.md). This contract says what a developer can expect from it.
 

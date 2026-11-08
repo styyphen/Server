@@ -4,6 +4,17 @@ Applications should publish telemetry only to OpenTelemetry. They should not dep
 
 For .NET applications, use the `Luhl.Observability` project as the standard integration pattern.
 
+## Cluster path
+
+Applications running on this k3s node export OTLP to the collector Service:
+
+- OTLP gRPC: `http://otel-collector.observability.svc.cluster.local:4317`
+- OTLP HTTP: `http://otel-collector.observability.svc.cluster.local:4318`
+
+Prefer gRPC for .NET services on the cluster. The current repo templates use HTTP on port `4318`.
+
+The `localhost` endpoints below are the workstation Docker Compose path. Use them with `.\scripts\start.ps1` on a development machine. Do not use them for a pod on this cluster.
+
 ## Required Settings
 
 ```json
@@ -19,9 +30,9 @@ For .NET applications, use the `Luhl.Observability` project as the standard inte
 
 Use lower-case service names separated by hyphens.
 
-## Endpoint
+## Workstation endpoint
 
-Use one of:
+Use one of these when the app runs on a workstation against the Compose stack:
 
 - OTLP gRPC: `http://localhost:4317`
 - OTLP HTTP: `http://localhost:4318`

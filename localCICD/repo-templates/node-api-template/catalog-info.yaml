@@ -1,0 +1,13 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: node-api-template
+  title: node-api
+  description: Paved-road skeleton for a new Node API.
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+spec:
+  type: library
+  lifecycle: production
+  owner: group:default/platform-operators
+  system: local-development-platform

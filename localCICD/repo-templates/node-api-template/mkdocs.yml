@@ -1,0 +1,7 @@
+site_name: node-api template
+docs_dir: docs
+nav:
+  - Architecture: architecture.md
+  - Runbook: runbook.md
+plugins:
+  - techdocs-core
